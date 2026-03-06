@@ -1,0 +1,12 @@
+{
+  "version": "v0.9",
+  "updateDataModel": {
+    "surfaceId": "main",
+    "path": "/reservation",
+    "value": {
+      "date": "2025-12-15",
+      "time": "19:00",
+      "guests": 2
+    }
+  }
+}

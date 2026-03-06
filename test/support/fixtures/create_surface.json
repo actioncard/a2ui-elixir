@@ -1,0 +1,13 @@
+{
+  "version": "v0.9",
+  "createSurface": {
+    "surfaceId": "main",
+    "catalogId": "https://a2ui.org/specification/v0_9/basic_catalog.json",
+    "theme": {
+      "primaryColor": "#1a73e8",
+      "iconUrl": "https://example.com/icon.png",
+      "agentDisplayName": "My Agent"
+    },
+    "sendDataModel": true
+  }
+}

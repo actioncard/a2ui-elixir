@@ -1,0 +1,25 @@
+{
+  "version": "v0.9",
+  "updateComponents": {
+    "surfaceId": "main",
+    "components": [
+      {
+        "id": "root",
+        "component": "Column",
+        "children": ["header", "form-card"],
+        "align": "stretch"
+      },
+      {
+        "id": "header",
+        "component": "Text",
+        "text": "# Book Your Table",
+        "variant": "h1"
+      },
+      {
+        "id": "form-card",
+        "component": "Card",
+        "child": "form-column"
+      }
+    ]
+  }
+}
