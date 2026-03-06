@@ -1,0 +1,128 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        elixir: ["1.18"]
+        otp: ["27"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v5
+        with:
+          path: deps
+          key: deps-${{ runner.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: deps-${{ runner.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-
+
+      - name: Restore build cache
+        uses: actions/cache@v5
+        with:
+          path: _build
+          key: build-${{ runner.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: build-${{ runner.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-
+
+      - name: Restore PLT cache
+        uses: actions/cache@v5
+        with:
+          path: priv/plts
+          key: plts-${{ runner.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: plts-${{ runner.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-
+
+      - run: mix deps.get
+
+      - run: mix format --check-formatted
+
+      - run: mix credo --strict
+
+      - run: mix dialyzer
+
+  test:
+    name: Test (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - elixir: "1.17"
+            otp: "25"
+          - elixir: "1.17"
+            otp: "27"
+          - elixir: "1.18"
+            otp: "25"
+          - elixir: "1.18"
+            otp: "27"
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v5
+        with:
+          path: deps
+          key: deps-${{ runner.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: deps-${{ runner.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-
+
+      - name: Restore build cache
+        uses: actions/cache@v5
+        with:
+          path: _build
+          key: build-${{ runner.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: build-${{ runner.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-
+
+      - run: mix deps.get
+
+      - run: mix compile --warnings-as-errors
+
+      - run: mix test --warnings-as-errors
+
+  publish:
+    name: Publish to Hex
+    if: github.event_name == 'release'
+    needs: [quality, test]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.18"
+          otp-version: "27"
+
+      - run: mix deps.get
+
+      - name: Verify version matches tag
+        run: |
+          tag="${GITHUB_REF#refs/tags/v}"
+          mix_version=$(grep '@version "' mix.exs | sed 's/.*@version "//;s/"//')
+          if [ "$tag" != "$mix_version" ]; then
+            echo "::error::Tag v$tag does not match mix.exs version $mix_version"
+            exit 1
+          fi
+
+      - run: mix hex.publish --yes
+    env:
+      HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
