@@ -27,7 +27,8 @@ defmodule A2UI.MixProject do
       {:phoenix_live_view, "~> 1.0"},
       {:phoenix_html, "~> 4.0"},
       {:floki, "~> 0.36", only: :test},
-      {:ex_doc, "~> 0.34", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
+      {:bandit, "~> 1.0", only: :dev}
     ]
   end
 end
