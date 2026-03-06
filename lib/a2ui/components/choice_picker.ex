@@ -1,0 +1,65 @@
+defmodule A2UI.Components.ChoicePicker do
+  @moduledoc """
+  Renders an A2UI ChoicePicker component.
+
+  Single selection (maxAllowedSelections == 1): radio buttons.
+  Multiple selection: checkboxes.
+  """
+
+  use Phoenix.Component
+
+  alias A2UI.Components.Renderer
+
+  attr :component, :any, required: true
+  attr :ctx, :any, required: true
+
+  def render(assigns) do
+    props = assigns.component.props
+    options = Map.get(props, "options", [])
+    selections = Renderer.resolve_prop(props, "selections", assigns.ctx, [])
+    max = Map.get(props, "maxAllowedSelections", 0)
+    single = max == 1
+    path = Renderer.binding_path(Map.get(props, "selections"))
+    a11y = Renderer.a11y_attrs(assigns.component.accessibility)
+    surface_id = assigns.ctx.surface_id
+    input_attrs = input_attrs(path, surface_id)
+    input_type = if single, do: "radio", else: "checkbox"
+
+    assigns =
+      assign(assigns,
+        options: options,
+        selections: selections,
+        a11y: a11y,
+        input_attrs: input_attrs,
+        input_type: input_type,
+        component_id: assigns.component.id
+      )
+
+    ~H"""
+    <fieldset class="a2ui-choice-picker" {@a11y}>
+      <div :for={option <- @options} class="a2ui-choice-picker__option">
+        <label>
+          <input
+            type={@input_type}
+            name={@component_id}
+            value={option["value"]}
+            checked={option["value"] in @selections}
+            {@input_attrs}
+          />
+          <span>{option["label"]}</span>
+        </label>
+      </div>
+    </fieldset>
+    """
+  end
+
+  defp input_attrs(nil, _surface_id), do: %{}
+
+  defp input_attrs(path, surface_id) do
+    %{
+      "phx-change" => "a2ui_input_change",
+      "phx-value-path" => path,
+      "phx-value-surface-id" => surface_id
+    }
+  end
+end
