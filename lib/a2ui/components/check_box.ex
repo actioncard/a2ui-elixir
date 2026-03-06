@@ -31,10 +31,12 @@ defmodule A2UI.Components.CheckBox do
     ~H"""
     <div class="a2ui-checkbox" {@a11y}>
       <label>
+        <input type="hidden" name={@component_id} value="false" {@input_attrs} />
         <input
           type="checkbox"
           id={@component_id}
           name={@component_id}
+          value="true"
           checked={@checked}
           {@input_attrs}
         />

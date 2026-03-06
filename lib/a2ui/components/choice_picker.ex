@@ -22,8 +22,8 @@ defmodule A2UI.Components.ChoicePicker do
     path = Renderer.binding_path(Map.get(props, "selections"))
     a11y = Renderer.a11y_attrs(assigns.component.accessibility)
     surface_id = assigns.ctx.surface_id
-    input_attrs = input_attrs(path, surface_id)
     input_type = if single, do: "radio", else: "checkbox"
+    input_attrs = input_attrs(path, surface_id, input_type)
 
     assigns =
       assign(assigns,
@@ -53,13 +53,14 @@ defmodule A2UI.Components.ChoicePicker do
     """
   end
 
-  defp input_attrs(nil, _surface_id), do: %{}
+  defp input_attrs(nil, _surface_id, _input_type), do: %{}
 
-  defp input_attrs(path, surface_id) do
+  defp input_attrs(path, surface_id, input_type) do
     %{
       "phx-change" => "a2ui_input_change",
       "phx-value-path" => path,
-      "phx-value-surface-id" => surface_id
+      "phx-value-surface-id" => surface_id,
+      "phx-value-input-type" => input_type
     }
   end
 end
