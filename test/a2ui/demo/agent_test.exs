@@ -14,12 +14,22 @@ defmodule A2UI.Demo.AgentTest do
       send(agent, {:a2ui_connect, self()})
 
       assert_receive {:a2ui_message, %CreateSurface{surface_id: "main", send_data_model: true}}
-      assert_receive {:a2ui_message, %UpdateDataModel{surface_id: "main", path: "/", has_value: true, value: value}}
+
+      assert_receive {:a2ui_message,
+                      %UpdateDataModel{
+                        surface_id: "main",
+                        path: "/",
+                        has_value: true,
+                        value: value
+                      }}
+
       assert value["reservation"]["name"] == ""
       assert value["reservation"]["guests"] == 2
       assert value["reservation"]["dietary"] == []
 
-      assert_receive {:a2ui_message, %UpdateComponents{surface_id: "main", components: components}}
+      assert_receive {:a2ui_message,
+                      %UpdateComponents{surface_id: "main", components: components}}
+
       assert length(components) > 0
 
       # Verify root component exists

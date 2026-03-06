@@ -45,7 +45,7 @@ defmodule A2UI.Live do
 
       import A2UI.Components.Renderer, only: [surface: 1]
 
-      on_mount A2UI.Live.InitHook
+      on_mount(A2UI.Live.InitHook)
 
       @impl Phoenix.LiveView
       def handle_info({:a2ui_message, msg}, socket) do

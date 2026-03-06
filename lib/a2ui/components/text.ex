@@ -19,8 +19,8 @@ defmodule A2UI.Components.Text do
     "caption" => "span"
   }
 
-  attr :component, :any, required: true
-  attr :ctx, :any, required: true
+  attr(:component, :any, required: true)
+  attr(:ctx, :any, required: true)
 
   def render(assigns) do
     props = assigns.component.props

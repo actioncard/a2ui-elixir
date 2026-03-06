@@ -68,8 +68,11 @@ defmodule A2UI.Protocol.Message do
   @spec from_json(String.t()) :: {:ok, t()} | {:error, String.t()}
   def from_json(json) when is_binary(json) do
     case Jason.decode(json) do
-      {:ok, map} -> from_map(map)
-      {:error, %Jason.DecodeError{} = err} -> {:error, "JSON decode error: #{Exception.message(err)}"}
+      {:ok, map} ->
+        from_map(map)
+
+      {:error, %Jason.DecodeError{} = err} ->
+        {:error, "JSON decode error: #{Exception.message(err)}"}
     end
   end
 end

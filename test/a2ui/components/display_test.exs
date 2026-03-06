@@ -9,10 +9,11 @@ defmodule A2UI.Components.DisplayTest do
 
   describe "Image component" do
     test "renders img tag with resolved url" do
-      component = make_component("img", "Image", %{
-        "url" => "https://example.com/photo.jpg",
-        "fit" => "contain"
-      })
+      component =
+        make_component("img", "Image", %{
+          "url" => "https://example.com/photo.jpg",
+          "fit" => "contain"
+        })
 
       ctx = make_ctx(%{"img" => component})
       assigns = %{component: component, ctx: ctx}
@@ -26,11 +27,14 @@ defmodule A2UI.Components.DisplayTest do
     end
 
     test "resolves data-bound url" do
-      component = make_component("img", "Image", %{
-        "url" => %{"path" => "/photo_url"}
-      })
+      component =
+        make_component("img", "Image", %{
+          "url" => %{"path" => "/photo_url"}
+        })
 
-      ctx = make_ctx(%{"img" => component}, "s1", data: %{"photo_url" => "https://bound.com/img.png"})
+      ctx =
+        make_ctx(%{"img" => component}, "s1", data: %{"photo_url" => "https://bound.com/img.png"})
+
       assigns = %{component: component, ctx: ctx}
 
       html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
@@ -39,9 +43,10 @@ defmodule A2UI.Components.DisplayTest do
     end
 
     test "uses accessibility label as alt" do
-      component = make_component("img", "Image", %{"url" => "pic.jpg"},
-        accessibility: %{"label" => "A sunset"}
-      )
+      component =
+        make_component("img", "Image", %{"url" => "pic.jpg"},
+          accessibility: %{"label" => "A sunset"}
+        )
 
       ctx = make_ctx(%{"img" => component})
       assigns = %{component: component, ctx: ctx}

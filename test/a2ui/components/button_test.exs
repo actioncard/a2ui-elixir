@@ -10,9 +10,10 @@ defmodule A2UI.Components.ButtonTest do
   describe "Button component" do
     test "renders with default variant" do
       components = %{
-        "btn" => make_component("btn", "Button", %{
-          "child" => "label"
-        }),
+        "btn" =>
+          make_component("btn", "Button", %{
+            "child" => "label"
+          }),
         "label" => make_component("label", "Text", %{"text" => "Click me"})
       }
 
@@ -38,9 +39,10 @@ defmodule A2UI.Components.ButtonTest do
     end
 
     test "emits phx-click for server action" do
-      component = make_component("btn", "Button", %{
-        "action" => %{"event" => %{"name" => "submit", "context" => %{}}}
-      })
+      component =
+        make_component("btn", "Button", %{
+          "action" => %{"event" => %{"name" => "submit", "context" => %{}}}
+        })
 
       ctx = make_ctx(%{"btn" => component}, "surf-1")
       assigns = %{component: component, ctx: ctx}
@@ -54,11 +56,12 @@ defmodule A2UI.Components.ButtonTest do
     end
 
     test "emits data attribute for local action" do
-      component = make_component("btn", "Button", %{
-        "action" => %{
-          "functionCall" => %{"call" => "openUrl", "args" => %{"url" => "https://example.com"}}
-        }
-      })
+      component =
+        make_component("btn", "Button", %{
+          "action" => %{
+            "functionCall" => %{"call" => "openUrl", "args" => %{"url" => "https://example.com"}}
+          }
+        })
 
       ctx = make_ctx(%{"btn" => component})
       assigns = %{component: component, ctx: ctx}

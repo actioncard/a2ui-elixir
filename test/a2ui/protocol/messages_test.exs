@@ -2,7 +2,14 @@ defmodule A2UI.Protocol.MessagesTest do
   use ExUnit.Case, async: true
 
   alias A2UI.Protocol.Message
-  alias A2UI.Protocol.Messages.{Action, CreateSurface, DeleteSurface, UpdateComponents, UpdateDataModel}
+
+  alias A2UI.Protocol.Messages.{
+    Action,
+    CreateSurface,
+    DeleteSurface,
+    UpdateComponents,
+    UpdateDataModel
+  }
 
   @fixtures_path "test/support/fixtures"
 

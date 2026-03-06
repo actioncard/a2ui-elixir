@@ -9,8 +9,8 @@ defmodule A2UI.Components.Button do
 
   alias A2UI.Components.Renderer
 
-  attr :component, :any, required: true
-  attr :ctx, :any, required: true
+  attr(:component, :any, required: true)
+  attr(:ctx, :any, required: true)
 
   def render(assigns) do
     props = assigns.component.props

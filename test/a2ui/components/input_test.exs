@@ -9,10 +9,11 @@ defmodule A2UI.Components.InputTest do
 
   describe "TextField component" do
     test "renders text input by default" do
-      component = make_component("tf", "TextField", %{
-        "label" => "Name",
-        "value" => %{"path" => "/name"}
-      })
+      component =
+        make_component("tf", "TextField", %{
+          "label" => "Name",
+          "value" => %{"path" => "/name"}
+        })
 
       ctx = make_ctx(%{"tf" => component}, "s1", data: %{"name" => "Alice"})
       assigns = %{component: component, ctx: ctx}
@@ -30,10 +31,11 @@ defmodule A2UI.Components.InputTest do
     end
 
     test "renders number input" do
-      component = make_component("tf", "TextField", %{
-        "textFieldType" => "number",
-        "value" => %{"path" => "/age"}
-      })
+      component =
+        make_component("tf", "TextField", %{
+          "textFieldType" => "number",
+          "value" => %{"path" => "/age"}
+        })
 
       ctx = make_ctx(%{"tf" => component}, "s1", data: %{"age" => 25})
       assigns = %{component: component, ctx: ctx}
@@ -44,10 +46,11 @@ defmodule A2UI.Components.InputTest do
     end
 
     test "renders password input for obscured" do
-      component = make_component("tf", "TextField", %{
-        "textFieldType" => "obscured",
-        "value" => "secret"
-      })
+      component =
+        make_component("tf", "TextField", %{
+          "textFieldType" => "obscured",
+          "value" => "secret"
+        })
 
       ctx = make_ctx(%{"tf" => component})
       assigns = %{component: component, ctx: ctx}
@@ -58,11 +61,12 @@ defmodule A2UI.Components.InputTest do
     end
 
     test "renders textarea for longText" do
-      component = make_component("tf", "TextField", %{
-        "textFieldType" => "longText",
-        "label" => "Bio",
-        "value" => %{"path" => "/bio"}
-      })
+      component =
+        make_component("tf", "TextField", %{
+          "textFieldType" => "longText",
+          "label" => "Bio",
+          "value" => %{"path" => "/bio"}
+        })
 
       ctx = make_ctx(%{"tf" => component}, "s1", data: %{"bio" => "Hello world"})
       assigns = %{component: component, ctx: ctx}
@@ -80,10 +84,11 @@ defmodule A2UI.Components.InputTest do
         %{"call" => "email", "message" => "Invalid email"}
       ]
 
-      component = make_component("tf", "TextField", %{
-        "value" => "test",
-        "checks" => checks
-      })
+      component =
+        make_component("tf", "TextField", %{
+          "value" => "test",
+          "checks" => checks
+        })
 
       ctx = make_ctx(%{"tf" => component})
       assigns = %{component: component, ctx: ctx}
@@ -107,10 +112,11 @@ defmodule A2UI.Components.InputTest do
 
   describe "CheckBox component" do
     test "renders checkbox with label" do
-      component = make_component("cb", "CheckBox", %{
-        "label" => "Agree to terms",
-        "value" => %{"path" => "/agreed"}
-      })
+      component =
+        make_component("cb", "CheckBox", %{
+          "label" => "Agree to terms",
+          "value" => %{"path" => "/agreed"}
+        })
 
       ctx = make_ctx(%{"cb" => component}, "s1", data: %{"agreed" => true})
       assigns = %{component: component, ctx: ctx}
@@ -125,10 +131,11 @@ defmodule A2UI.Components.InputTest do
     end
 
     test "renders unchecked when false" do
-      component = make_component("cb", "CheckBox", %{
-        "label" => "Check me",
-        "value" => %{"path" => "/flag"}
-      })
+      component =
+        make_component("cb", "CheckBox", %{
+          "label" => "Check me",
+          "value" => %{"path" => "/flag"}
+        })
 
       ctx = make_ctx(%{"cb" => component}, "s1", data: %{"flag" => false})
       assigns = %{component: component, ctx: ctx}
@@ -145,14 +152,15 @@ defmodule A2UI.Components.InputTest do
 
   describe "ChoicePicker component" do
     test "renders radio buttons for single selection" do
-      component = make_component("cp", "ChoicePicker", %{
-        "options" => [
-          %{"label" => "Red", "value" => "red"},
-          %{"label" => "Blue", "value" => "blue"}
-        ],
-        "selections" => %{"path" => "/color"},
-        "maxAllowedSelections" => 1
-      })
+      component =
+        make_component("cp", "ChoicePicker", %{
+          "options" => [
+            %{"label" => "Red", "value" => "red"},
+            %{"label" => "Blue", "value" => "blue"}
+          ],
+          "selections" => %{"path" => "/color"},
+          "maxAllowedSelections" => 1
+        })
 
       ctx = make_ctx(%{"cp" => component}, "s1", data: %{"color" => ["red"]})
       assigns = %{component: component, ctx: ctx}
@@ -166,14 +174,15 @@ defmodule A2UI.Components.InputTest do
     end
 
     test "renders checkboxes for multi selection" do
-      component = make_component("cp", "ChoicePicker", %{
-        "options" => [
-          %{"label" => "A", "value" => "a"},
-          %{"label" => "B", "value" => "b"}
-        ],
-        "selections" => %{"path" => "/selected"},
-        "maxAllowedSelections" => 3
-      })
+      component =
+        make_component("cp", "ChoicePicker", %{
+          "options" => [
+            %{"label" => "A", "value" => "a"},
+            %{"label" => "B", "value" => "b"}
+          ],
+          "selections" => %{"path" => "/selected"},
+          "maxAllowedSelections" => 3
+        })
 
       ctx = make_ctx(%{"cp" => component}, "s1", data: %{"selected" => ["a"]})
       assigns = %{component: component, ctx: ctx}
@@ -184,10 +193,11 @@ defmodule A2UI.Components.InputTest do
     end
 
     test "renders with fieldset" do
-      component = make_component("cp", "ChoicePicker", %{
-        "options" => [%{"label" => "X", "value" => "x"}],
-        "selections" => []
-      })
+      component =
+        make_component("cp", "ChoicePicker", %{
+          "options" => [%{"label" => "X", "value" => "x"}],
+          "selections" => []
+        })
 
       ctx = make_ctx(%{"cp" => component})
       assigns = %{component: component, ctx: ctx}
@@ -200,11 +210,12 @@ defmodule A2UI.Components.InputTest do
 
   describe "Slider component" do
     test "renders range input" do
-      component = make_component("sl", "Slider", %{
-        "value" => %{"path" => "/volume"},
-        "minValue" => 0,
-        "maxValue" => 100
-      })
+      component =
+        make_component("sl", "Slider", %{
+          "value" => %{"path" => "/volume"},
+          "minValue" => 0,
+          "maxValue" => 100
+        })
 
       ctx = make_ctx(%{"sl" => component}, "s1", data: %{"volume" => 75})
       assigns = %{component: component, ctx: ctx}
@@ -233,11 +244,12 @@ defmodule A2UI.Components.InputTest do
 
   describe "DateTimeInput component" do
     test "renders date input when enableDate only" do
-      component = make_component("dt", "DateTimeInput", %{
-        "label" => "Date",
-        "value" => %{"path" => "/date"},
-        "enableDate" => true
-      })
+      component =
+        make_component("dt", "DateTimeInput", %{
+          "label" => "Date",
+          "value" => %{"path" => "/date"},
+          "enableDate" => true
+        })
 
       ctx = make_ctx(%{"dt" => component}, "s1", data: %{"date" => "2025-12-15"})
       assigns = %{component: component, ctx: ctx}
@@ -251,10 +263,11 @@ defmodule A2UI.Components.InputTest do
     end
 
     test "renders time input when enableTime only" do
-      component = make_component("dt", "DateTimeInput", %{
-        "enableTime" => true,
-        "value" => "19:00"
-      })
+      component =
+        make_component("dt", "DateTimeInput", %{
+          "enableTime" => true,
+          "value" => "19:00"
+        })
 
       ctx = make_ctx(%{"dt" => component})
       assigns = %{component: component, ctx: ctx}
@@ -265,11 +278,12 @@ defmodule A2UI.Components.InputTest do
     end
 
     test "renders datetime-local when both enabled" do
-      component = make_component("dt", "DateTimeInput", %{
-        "enableDate" => true,
-        "enableTime" => true,
-        "value" => "2025-12-15T19:00"
-      })
+      component =
+        make_component("dt", "DateTimeInput", %{
+          "enableDate" => true,
+          "enableTime" => true,
+          "value" => "2025-12-15T19:00"
+        })
 
       ctx = make_ctx(%{"dt" => component})
       assigns = %{component: component, ctx: ctx}

@@ -35,9 +35,7 @@ defmodule A2UI.Components.ContainerTest do
     end
 
     test "renders accessibility attributes" do
-      component = make_component("card", "Card", %{},
-        accessibility: %{"label" => "Info card"}
-      )
+      component = make_component("card", "Card", %{}, accessibility: %{"label" => "Info card"})
 
       ctx = make_ctx(%{"card" => component})
       assigns = %{component: component, ctx: ctx}
@@ -51,12 +49,13 @@ defmodule A2UI.Components.ContainerTest do
   describe "Tabs component" do
     test "renders tab bar and panels" do
       components = %{
-        "tabs" => make_component("tabs", "Tabs", %{
-          "tabItems" => [
-            %{"title" => "Info", "child" => "panel1"},
-            %{"title" => "Settings", "child" => "panel2"}
-          ]
-        }),
+        "tabs" =>
+          make_component("tabs", "Tabs", %{
+            "tabItems" => [
+              %{"title" => "Info", "child" => "panel1"},
+              %{"title" => "Settings", "child" => "panel2"}
+            ]
+          }),
         "panel1" => make_component("panel1", "Text", %{"text" => "Info content"}),
         "panel2" => make_component("panel2", "Text", %{"text" => "Settings content"})
       }
@@ -79,12 +78,13 @@ defmodule A2UI.Components.ContainerTest do
 
     test "first tab is active, rest hidden" do
       components = %{
-        "tabs" => make_component("tabs", "Tabs", %{
-          "tabItems" => [
-            %{"title" => "Tab 1", "child" => "p1"},
-            %{"title" => "Tab 2", "child" => "p2"}
-          ]
-        }),
+        "tabs" =>
+          make_component("tabs", "Tabs", %{
+            "tabItems" => [
+              %{"title" => "Tab 1", "child" => "p1"},
+              %{"title" => "Tab 2", "child" => "p2"}
+            ]
+          }),
         "p1" => make_component("p1", "Text", %{"text" => "First"}),
         "p2" => make_component("p2", "Text", %{"text" => "Second"})
       }
@@ -109,13 +109,15 @@ defmodule A2UI.Components.ContainerTest do
   describe "Modal component" do
     test "renders entry point and hidden overlay" do
       components = %{
-        "modal" => make_component("modal", "Modal", %{
-          "entryPointChild" => "trigger",
-          "contentChild" => "dialog"
-        }),
-        "trigger" => make_component("trigger", "Button", %{
-          "child" => "trigger-text"
-        }),
+        "modal" =>
+          make_component("modal", "Modal", %{
+            "entryPointChild" => "trigger",
+            "contentChild" => "dialog"
+          }),
+        "trigger" =>
+          make_component("trigger", "Button", %{
+            "child" => "trigger-text"
+          }),
         "trigger-text" => make_component("trigger-text", "Text", %{"text" => "Open"}),
         "dialog" => make_component("dialog", "Text", %{"text" => "Modal content"})
       }
@@ -138,9 +140,10 @@ defmodule A2UI.Components.ContainerTest do
 
     test "renders without entry point" do
       components = %{
-        "modal" => make_component("modal", "Modal", %{
-          "contentChild" => "content"
-        }),
+        "modal" =>
+          make_component("modal", "Modal", %{
+            "contentChild" => "content"
+          }),
         "content" => make_component("content", "Text", %{"text" => "Hidden"})
       }
 
@@ -156,9 +159,10 @@ defmodule A2UI.Components.ContainerTest do
 
     test "renders without content" do
       components = %{
-        "modal" => make_component("modal", "Modal", %{
-          "entryPointChild" => "trigger"
-        }),
+        "modal" =>
+          make_component("modal", "Modal", %{
+            "entryPointChild" => "trigger"
+          }),
         "trigger" => make_component("trigger", "Text", %{"text" => "Trigger"})
       }
 

@@ -34,38 +34,47 @@ defmodule A2UI.Components.RendererTest do
 
     test "full restaurant booking surface" do
       components = %{
-        "root" => make_component("root", "Column", %{
-          "children" => ["header", "form-card"],
-          "align" => "stretch"
-        }),
-        "header" => make_component("header", "Text", %{
-          "text" => "Book Your Table",
-          "variant" => "h1"
-        }),
+        "root" =>
+          make_component("root", "Column", %{
+            "children" => ["header", "form-card"],
+            "align" => "stretch"
+          }),
+        "header" =>
+          make_component("header", "Text", %{
+            "text" => "Book Your Table",
+            "variant" => "h1"
+          }),
         "form-card" => make_component("form-card", "Card", %{"child" => "form-col"}),
-        "form-col" => make_component("form-col", "Column", %{
-          "children" => ["date-input", "submit-row"]
-        }),
-        "date-input" => make_component("date-input", "DateTimeInput", %{
-          "label" => "Select Date",
-          "value" => %{"path" => "/reservation/date"},
-          "enableDate" => true
-        }),
-        "submit-row" => make_component("submit-row", "Row", %{
-          "children" => ["submit-btn"],
-          "justify" => "end"
-        }),
+        "form-col" =>
+          make_component("form-col", "Column", %{
+            "children" => ["date-input", "submit-row"]
+          }),
+        "date-input" =>
+          make_component("date-input", "DateTimeInput", %{
+            "label" => "Select Date",
+            "value" => %{"path" => "/reservation/date"},
+            "enableDate" => true
+          }),
+        "submit-row" =>
+          make_component("submit-row", "Row", %{
+            "children" => ["submit-btn"],
+            "justify" => "end"
+          }),
         "submit-text" => make_component("submit-text", "Text", %{"text" => "Confirm"}),
-        "submit-btn" => make_component("submit-btn", "Button", %{
-          "child" => "submit-text",
-          "variant" => "primary",
-          "action" => %{"event" => %{"name" => "confirm_booking"}}
-        })
+        "submit-btn" =>
+          make_component("submit-btn", "Button", %{
+            "child" => "submit-text",
+            "variant" => "primary",
+            "action" => %{"event" => %{"name" => "confirm_booking"}}
+          })
       }
 
-      surface = make_surface("main", components, data: %{
-        "reservation" => %{"date" => "2025-12-15"}
-      })
+      surface =
+        make_surface("main", components,
+          data: %{
+            "reservation" => %{"date" => "2025-12-15"}
+          }
+        )
 
       assigns = %{surface: surface}
       html = rendered_to_string(~H"<Renderer.surface surface={@surface} />")
@@ -108,7 +117,8 @@ defmodule A2UI.Components.RendererTest do
       ctx = make_ctx(components)
       assigns = %{component: parent, ctx: ctx}
 
-      html = rendered_to_string(~H"<Renderer.render_children component={@component} ctx={@ctx} />")
+      html =
+        rendered_to_string(~H"<Renderer.render_children component={@component} ctx={@ctx} />")
 
       assert html =~ "First"
       assert html =~ "Second"
@@ -116,20 +126,25 @@ defmodule A2UI.Components.RendererTest do
 
     test "renders template children with data binding" do
       components = %{
-        "list" => make_component("list", "Column", %{
-          "children" => %{"template" => %{"componentId" => "item", "path" => "/items"}}
-        }),
+        "list" =>
+          make_component("list", "Column", %{
+            "children" => %{"template" => %{"componentId" => "item", "path" => "/items"}}
+          }),
         "item" => make_component("item", "Text", %{"text" => %{"path" => "name"}})
       }
 
-      ctx = make_ctx(components, "s1", data: %{
-        "items" => [%{"name" => "Alice"}, %{"name" => "Bob"}]
-      })
+      ctx =
+        make_ctx(components, "s1",
+          data: %{
+            "items" => [%{"name" => "Alice"}, %{"name" => "Bob"}]
+          }
+        )
 
       parent = components["list"]
       assigns = %{component: parent, ctx: ctx}
 
-      html = rendered_to_string(~H"<Renderer.render_children component={@component} ctx={@ctx} />")
+      html =
+        rendered_to_string(~H"<Renderer.render_children component={@component} ctx={@ctx} />")
 
       assert html =~ "Alice"
       assert html =~ "Bob"
@@ -140,7 +155,8 @@ defmodule A2UI.Components.RendererTest do
       ctx = make_ctx(%{"solo" => component})
       assigns = %{component: component, ctx: ctx}
 
-      html = rendered_to_string(~H"<Renderer.render_children component={@component} ctx={@ctx} />")
+      html =
+        rendered_to_string(~H"<Renderer.render_children component={@component} ctx={@ctx} />")
 
       assert html == ""
     end

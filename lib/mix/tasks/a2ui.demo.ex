@@ -11,6 +11,9 @@ defmodule Mix.Tasks.A2ui.Demo do
 
   @shortdoc "Starts the A2UI demo server"
 
+  # Mix.Task behaviour and functions aren't in the PLT (build tool, not runtime dep)
+  @dialyzer [:no_undefined_callbacks, {:nowarn_function, run: 1}]
+
   @impl true
   def run(_args) do
     Mix.Task.run("app.start")

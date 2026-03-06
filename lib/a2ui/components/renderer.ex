@@ -37,7 +37,7 @@ defmodule A2UI.Components.Renderer do
   ## Assigns
   - `surface` — `%A2UI.Surface{}`
   """
-  attr :surface, :any, required: true
+  attr(:surface, :any, required: true)
 
   def surface(assigns) do
     ctx = RenderContext.from_surface(assigns.surface)
@@ -66,8 +66,8 @@ defmodule A2UI.Components.Renderer do
   - `component` — `%A2UI.Component{}`
   - `ctx` — `%RenderContext{}`
   """
-  attr :component, :any, required: true
-  attr :ctx, :any, required: true
+  attr(:component, :any, required: true)
+  attr(:ctx, :any, required: true)
 
   def component(assigns) do
     case Map.get(@type_modules, assigns.component.type) do
@@ -101,8 +101,8 @@ defmodule A2UI.Components.Renderer do
   - `component` — `%A2UI.Component{}`
   - `ctx` — `%RenderContext{}`
   """
-  attr :component, :any, required: true
-  attr :ctx, :any, required: true
+  attr(:component, :any, required: true)
+  attr(:ctx, :any, required: true)
 
   def render_children(assigns) do
     case ComponentTree.child_ids(assigns.component) do

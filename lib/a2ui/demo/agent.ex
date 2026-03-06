@@ -67,33 +67,45 @@ defmodule A2UI.Demo.Agent do
   end
 
   defp send_booking_form(pid) do
-    send(pid, {:a2ui_message, %CreateSurface{
-      surface_id: "main",
-      send_data_model: true
-    }})
+    send(
+      pid,
+      {:a2ui_message,
+       %CreateSurface{
+         surface_id: "main",
+         send_data_model: true
+       }}
+    )
 
-    send(pid, {:a2ui_message, %UpdateDataModel{
-      surface_id: "main",
-      path: "/",
-      value: %{
-        "reservation" => %{
-          "name" => "",
-          "date" => "",
-          "guests" => 2,
-          "dietary" => []
-        }
-      },
-      has_value: true
-    }})
+    send(
+      pid,
+      {:a2ui_message,
+       %UpdateDataModel{
+         surface_id: "main",
+         path: "/",
+         value: %{
+           "reservation" => %{
+             "name" => "",
+             "date" => "",
+             "guests" => 2,
+             "dietary" => []
+           }
+         },
+         has_value: true
+       }}
+    )
 
     send_booking_form_components(pid)
   end
 
   defp send_booking_form_components(pid) do
-    send(pid, {:a2ui_message, %UpdateComponents{
-      surface_id: "main",
-      components: booking_form_components()
-    }})
+    send(
+      pid,
+      {:a2ui_message,
+       %UpdateComponents{
+         surface_id: "main",
+         components: booking_form_components()
+       }}
+    )
   end
 
   defp send_confirmation(pid, context) do
@@ -109,26 +121,34 @@ defmodule A2UI.Demo.Agent do
         other -> to_string(other)
       end
 
-    send(pid, {:a2ui_message, %UpdateComponents{
-      surface_id: "main",
-      components: confirmation_components(name, date, guests, dietary_text)
-    }})
+    send(
+      pid,
+      {:a2ui_message,
+       %UpdateComponents{
+         surface_id: "main",
+         components: confirmation_components(name, date, guests, dietary_text)
+       }}
+    )
   end
 
   defp send_reset(pid) do
-    send(pid, {:a2ui_message, %UpdateDataModel{
-      surface_id: "main",
-      path: "/",
-      value: %{
-        "reservation" => %{
-          "name" => "",
-          "date" => "",
-          "guests" => 2,
-          "dietary" => []
-        }
-      },
-      has_value: true
-    }})
+    send(
+      pid,
+      {:a2ui_message,
+       %UpdateDataModel{
+         surface_id: "main",
+         path: "/",
+         value: %{
+           "reservation" => %{
+             "name" => "",
+             "date" => "",
+             "guests" => 2,
+             "dietary" => []
+           }
+         },
+         has_value: true
+       }}
+    )
   end
 
   # ── Component definitions ──
@@ -139,84 +159,147 @@ defmodule A2UI.Demo.Agent do
       %Component{id: "root", type: "Column", props: %{"children" => ["header", "form-card"]}},
 
       # Header
-      %Component{id: "header", type: "Text", props: %{"text" => "Book Your Table", "variant" => "h1"}},
+      %Component{
+        id: "header",
+        type: "Text",
+        props: %{"text" => "Book Your Table", "variant" => "h1"}
+      },
 
       # Card wrapper
       %Component{id: "form-card", type: "Card", props: %{"child" => "form-col"}},
 
       # Form column
-      %Component{id: "form-col", type: "Column", props: %{
-        "children" => ["name-field", "date-field", "guests-section", "dietary-section", "divider", "submit-row"]
-      }},
+      %Component{
+        id: "form-col",
+        type: "Column",
+        props: %{
+          "children" => [
+            "name-field",
+            "date-field",
+            "guests-section",
+            "dietary-section",
+            "divider",
+            "submit-row"
+          ]
+        }
+      },
 
       # Name
-      %Component{id: "name-field", type: "TextField", props: %{
-        "label" => "Your Name",
-        "value" => %{"path" => "/reservation/name"}
-      }},
+      %Component{
+        id: "name-field",
+        type: "TextField",
+        props: %{
+          "label" => "Your Name",
+          "value" => %{"path" => "/reservation/name"}
+        }
+      },
 
       # Date
-      %Component{id: "date-field", type: "DateTimeInput", props: %{
-        "label" => "Reservation Date",
-        "value" => %{"path" => "/reservation/date"},
-        "enableDate" => true
-      }},
+      %Component{
+        id: "date-field",
+        type: "DateTimeInput",
+        props: %{
+          "label" => "Reservation Date",
+          "value" => %{"path" => "/reservation/date"},
+          "enableDate" => true
+        }
+      },
 
       # Guests section
-      %Component{id: "guests-section", type: "Column", props: %{
-        "children" => ["guests-label", "guests-slider", "guests-value"]
-      }},
-      %Component{id: "guests-label", type: "Text", props: %{"text" => "Number of Guests", "variant" => "body"}},
-      %Component{id: "guests-slider", type: "Slider", props: %{
-        "value" => %{"path" => "/reservation/guests"},
-        "min" => 1,
-        "max" => 12
-      }},
-      %Component{id: "guests-value", type: "Text", props: %{
-        "text" => %{"path" => "/reservation/guests"},
-        "variant" => "caption"
-      }},
+      %Component{
+        id: "guests-section",
+        type: "Column",
+        props: %{
+          "children" => ["guests-label", "guests-slider", "guests-value"]
+        }
+      },
+      %Component{
+        id: "guests-label",
+        type: "Text",
+        props: %{"text" => "Number of Guests", "variant" => "body"}
+      },
+      %Component{
+        id: "guests-slider",
+        type: "Slider",
+        props: %{
+          "value" => %{"path" => "/reservation/guests"},
+          "min" => 1,
+          "max" => 12
+        }
+      },
+      %Component{
+        id: "guests-value",
+        type: "Text",
+        props: %{
+          "text" => %{"path" => "/reservation/guests"},
+          "variant" => "caption"
+        }
+      },
 
       # Dietary section
-      %Component{id: "dietary-section", type: "Column", props: %{
-        "children" => ["dietary-label", "dietary-picker"]
-      }},
-      %Component{id: "dietary-label", type: "Text", props: %{"text" => "Dietary Preferences", "variant" => "body"}},
-      %Component{id: "dietary-picker", type: "ChoicePicker", props: %{
-        "options" => [
-          %{"label" => "Vegetarian", "value" => "vegetarian"},
-          %{"label" => "Vegan", "value" => "vegan"},
-          %{"label" => "Gluten-Free", "value" => "gluten-free"},
-          %{"label" => "None", "value" => "none"}
-        ],
-        "selections" => %{"path" => "/reservation/dietary"},
-        "maxAllowedSelections" => 0
-      }},
+      %Component{
+        id: "dietary-section",
+        type: "Column",
+        props: %{
+          "children" => ["dietary-label", "dietary-picker"]
+        }
+      },
+      %Component{
+        id: "dietary-label",
+        type: "Text",
+        props: %{"text" => "Dietary Preferences", "variant" => "body"}
+      },
+      %Component{
+        id: "dietary-picker",
+        type: "ChoicePicker",
+        props: %{
+          "options" => [
+            %{"label" => "Vegetarian", "value" => "vegetarian"},
+            %{"label" => "Vegan", "value" => "vegan"},
+            %{"label" => "Gluten-Free", "value" => "gluten-free"},
+            %{"label" => "None", "value" => "none"}
+          ],
+          "selections" => %{"path" => "/reservation/dietary"},
+          "maxAllowedSelections" => 0
+        }
+      },
 
       # Divider
       %Component{id: "divider", type: "Divider", props: %{"orientation" => "horizontal"}},
 
       # Submit row
-      %Component{id: "submit-row", type: "Row", props: %{
-        "children" => ["submit-btn"],
-        "justify" => "end"
-      }},
-      %Component{id: "submit-btn", type: "Button", props: %{
-        "child" => "submit-text",
-        "variant" => "primary",
-        "action" => %{
-          "event" => %{
-            "name" => "submit_booking",
-            "context" => %{
-              "name" => %{"path" => "/reservation/name"},
-              "date" => %{"path" => "/reservation/date"},
-              "guests" => %{"path" => "/reservation/guests"},
-              "dietary" => %{"path" => "/reservation/dietary"}
+      %Component{
+        id: "submit-row",
+        type: "Row",
+        props: %{
+          "children" => ["submit-btn"],
+          "justify" => "end"
+        }
+      },
+      %Component{
+        id: "submit-btn",
+        type: "Button",
+        props: %{
+          "child" => "submit-text",
+          "variant" => "primary",
+          "action" => %{
+            "event" => %{
+              "name" => "submit_booking",
+              "context" => %{
+                "name" => %{"path" => "/reservation/name"},
+                "date" => %{"path" => "/reservation/date"},
+                "guests" => %{"path" => "/reservation/guests"},
+                "dietary" => %{"path" => "/reservation/dietary"}
+              }
             }
           }
         }
-      }},
-      %Component{id: "submit-text", type: "Text", props: %{"text" => "Reserve Table", "variant" => "body"}}
+      },
+      %Component{
+        id: "submit-text",
+        type: "Text",
+        props: %{"text" => "Reserve Table", "variant" => "body"}
+      }
     ]
   end
 
@@ -226,40 +309,82 @@ defmodule A2UI.Demo.Agent do
       %Component{id: "root", type: "Column", props: %{"children" => ["header", "form-card"]}},
 
       # Header
-      %Component{id: "header", type: "Text", props: %{"text" => "Reservation Confirmed!", "variant" => "h1"}},
+      %Component{
+        id: "header",
+        type: "Text",
+        props: %{"text" => "Reservation Confirmed!", "variant" => "h1"}
+      },
 
       # Card
       %Component{id: "form-card", type: "Card", props: %{"child" => "details-col"}},
 
       # Details
-      %Component{id: "details-col", type: "Column", props: %{
-        "children" => ["detail-name", "detail-date", "detail-guests", "detail-dietary", "divider", "new-row"]
-      }},
-
-      %Component{id: "detail-name", type: "Text", props: %{"text" => "Name: #{name}", "variant" => "body"}},
-      %Component{id: "detail-date", type: "Text", props: %{"text" => "Date: #{date}", "variant" => "body"}},
-      %Component{id: "detail-guests", type: "Text", props: %{"text" => "Guests: #{guests}", "variant" => "body"}},
-      %Component{id: "detail-dietary", type: "Text", props: %{"text" => "Dietary: #{dietary_text}", "variant" => "body"}},
+      %Component{
+        id: "details-col",
+        type: "Column",
+        props: %{
+          "children" => [
+            "detail-name",
+            "detail-date",
+            "detail-guests",
+            "detail-dietary",
+            "divider",
+            "new-row"
+          ]
+        }
+      },
+      %Component{
+        id: "detail-name",
+        type: "Text",
+        props: %{"text" => "Name: #{name}", "variant" => "body"}
+      },
+      %Component{
+        id: "detail-date",
+        type: "Text",
+        props: %{"text" => "Date: #{date}", "variant" => "body"}
+      },
+      %Component{
+        id: "detail-guests",
+        type: "Text",
+        props: %{"text" => "Guests: #{guests}", "variant" => "body"}
+      },
+      %Component{
+        id: "detail-dietary",
+        type: "Text",
+        props: %{"text" => "Dietary: #{dietary_text}", "variant" => "body"}
+      },
 
       # Divider
       %Component{id: "divider", type: "Divider", props: %{"orientation" => "horizontal"}},
 
       # New reservation button
-      %Component{id: "new-row", type: "Row", props: %{
-        "children" => ["new-btn"],
-        "justify" => "center"
-      }},
-      %Component{id: "new-btn", type: "Button", props: %{
-        "child" => "new-text",
-        "variant" => "default",
-        "action" => %{
-          "event" => %{
-            "name" => "new_reservation",
-            "context" => %{}
+      %Component{
+        id: "new-row",
+        type: "Row",
+        props: %{
+          "children" => ["new-btn"],
+          "justify" => "center"
+        }
+      },
+      %Component{
+        id: "new-btn",
+        type: "Button",
+        props: %{
+          "child" => "new-text",
+          "variant" => "default",
+          "action" => %{
+            "event" => %{
+              "name" => "new_reservation",
+              "context" => %{}
+            }
           }
         }
-      }},
-      %Component{id: "new-text", type: "Text", props: %{"text" => "New Reservation", "variant" => "body"}}
+      },
+      %Component{
+        id: "new-text",
+        type: "Text",
+        props: %{"text" => "New Reservation", "variant" => "body"}
+      }
     ]
   end
 end

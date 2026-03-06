@@ -11,8 +11,8 @@ defmodule A2UI.Components.ListComponent do
   alias A2UI.ComponentTree
   alias A2UI.Components.{Renderer, RenderContext}
 
-  attr :component, :any, required: true
-  attr :ctx, :any, required: true
+  attr(:component, :any, required: true)
+  attr(:ctx, :any, required: true)
 
   def render(assigns) do
     props = assigns.component.props

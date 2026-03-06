@@ -263,7 +263,11 @@ defmodule A2UI.SurfaceManagerTest do
         components: [
           %Component{id: "root", type: "Column", props: %{"children" => ["header", "form"]}},
           %Component{id: "header", type: "Text", props: %{"text" => "# Book Your Table"}},
-          %Component{id: "form", type: "Column", props: %{"children" => ["date-input", "submit"]}},
+          %Component{
+            id: "form",
+            type: "Column",
+            props: %{"children" => ["date-input", "submit"]}
+          },
           %Component{
             id: "date-input",
             type: "DateTimeInput",

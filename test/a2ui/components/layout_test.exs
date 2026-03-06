@@ -28,11 +28,12 @@ defmodule A2UI.Components.LayoutTest do
     end
 
     test "applies justify and align" do
-      component = make_component("row", "Row", %{
-        "children" => [],
-        "justify" => "spaceBetween",
-        "align" => "center"
-      })
+      component =
+        make_component("row", "Row", %{
+          "children" => [],
+          "justify" => "spaceBetween",
+          "align" => "center"
+        })
 
       ctx = make_ctx(%{"row" => component})
       assigns = %{component: component, ctx: ctx}
@@ -97,10 +98,11 @@ defmodule A2UI.Components.LayoutTest do
     end
 
     test "renders horizontal list" do
-      component = make_component("list", "List", %{
-        "children" => [],
-        "direction" => "horizontal"
-      })
+      component =
+        make_component("list", "List", %{
+          "children" => [],
+          "direction" => "horizontal"
+        })
 
       ctx = make_ctx(%{"list" => component})
       assigns = %{component: component, ctx: ctx}
@@ -112,15 +114,19 @@ defmodule A2UI.Components.LayoutTest do
 
     test "renders template children" do
       components = %{
-        "list" => make_component("list", "List", %{
-          "children" => %{"template" => %{"componentId" => "item", "path" => "/items"}}
-        }),
+        "list" =>
+          make_component("list", "List", %{
+            "children" => %{"template" => %{"componentId" => "item", "path" => "/items"}}
+          }),
         "item" => make_component("item", "Text", %{"text" => %{"path" => "name"}})
       }
 
-      ctx = make_ctx(components, "s1", data: %{
-        "items" => [%{"name" => "Alice"}, %{"name" => "Bob"}, %{"name" => "Charlie"}]
-      })
+      ctx =
+        make_ctx(components, "s1",
+          data: %{
+            "items" => [%{"name" => "Alice"}, %{"name" => "Bob"}, %{"name" => "Charlie"}]
+          }
+        )
 
       component = components["list"]
       assigns = %{component: component, ctx: ctx}
@@ -138,9 +144,10 @@ defmodule A2UI.Components.LayoutTest do
 
     test "handles empty template data" do
       components = %{
-        "list" => make_component("list", "List", %{
-          "children" => %{"template" => %{"componentId" => "item", "path" => "/items"}}
-        }),
+        "list" =>
+          make_component("list", "List", %{
+            "children" => %{"template" => %{"componentId" => "item", "path" => "/items"}}
+          }),
         "item" => make_component("item", "Text", %{"text" => %{"path" => "name"}})
       }
 

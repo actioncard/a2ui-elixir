@@ -15,8 +15,8 @@ defmodule A2UI.Components.TextField do
     "obscured" => "password"
   }
 
-  attr :component, :any, required: true
-  attr :ctx, :any, required: true
+  attr(:component, :any, required: true)
+  attr(:ctx, :any, required: true)
 
   def render(assigns) do
     props = assigns.component.props
