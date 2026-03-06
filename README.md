@@ -1,0 +1,157 @@
+# A2UI
+
+[![Hex.pm](https://img.shields.io/hexpm/v/a2ui.svg)](https://hex.pm/packages/a2ui)
+[![Docs](https://img.shields.io/badge/hex-docs-blue.svg)](https://hexdocs.pm/a2ui)
+[![CI](https://github.com/actioncard/a2ui-elixir/actions/workflows/ci.yml/badge.svg)](https://github.com/actioncard/a2ui-elixir/actions/workflows/ci.yml)
+[![License](https://img.shields.io/hexpm/l/a2ui.svg)](LICENSE)
+[![AI Assisted](https://img.shields.io/badge/AI-Assisted-blue)](CONTRIBUTING.md)
+
+Elixir implementation of the [A2UI protocol](https://a2ui.org/) — a standard for AI agents to render declarative UI through Phoenix LiveView.
+
+Agents send A2UI v0.9 JSONL messages describing components, and this library renders them as native LiveView function components. User interactions are translated back into A2UI action messages and dispatched to the agent.
+
+> **Pre-release**: This library is under active development. The API may change before 1.0.
+
+> [!NOTE]
+> This project is developed with _significant_ AI assistance (Claude, Copilot, etc.)
+
+## Features
+
+- **Protocol parsing** — JSONL stream parser for A2UI v0.9 messages (CreateSurface, UpdateComponents, UpdateDataModel, DeleteSurface, Action)
+- **16 component types** — Text, Button, TextField, CheckBox, ChoicePicker, Slider, DateTimeInput, Image, Icon, Divider, Row, Column, List, Card, Tabs, Modal
+- **Data binding** — two-way binding with JSON Pointer paths, resolved at render time
+- **LiveView macro** — `use A2UI.Live` injects mount hook, message handling, and event dispatch
+- **Transport abstraction** — `A2UI.Transport` behaviour with built-in local (process message) transport
+- **CSS classes** — BEM-style `a2ui-*` classes on all components for easy styling
+- **Demo app** — `mix a2ui.demo` launches a restaurant booking agent at `localhost:4002`
+
+## Quick Start
+
+```elixir
+defmodule MyAppWeb.AgentLive do
+  use MyAppWeb, :live_view
+  use A2UI.Live
+
+  def mount(_params, _session, socket) do
+    if connected?(socket) do
+      {:ok, transport} = A2UI.Transport.Local.connect(agent: MyApp.Agent)
+      {:ok, assign(socket, transport: transport)}
+    else
+      {:ok, assign(socket, transport: nil)}
+    end
+  end
+
+  def render(assigns) do
+    ~H"""
+    <.surface :for={{_id, s} <- @a2ui_surfaces} surface={s} />
+    """
+  end
+
+  @impl A2UI.Live
+  def handle_a2ui_action(action, metadata, socket) do
+    A2UI.Transport.Local.send_action(socket.assigns.transport, action, metadata)
+    {:noreply, socket}
+  end
+end
+```
+
+`use A2UI.Live` gives you:
+
+- `@a2ui_surfaces` assign initialized on mount
+- Automatic handling of `{:a2ui_message, msg}` info messages
+- Automatic handling of `a2ui_action` and `a2ui_input_change` events
+- A `handle_a2ui_action/3` callback for dispatching actions to your agent
+
+## Demo
+
+Run the built-in restaurant booking demo:
+
+```bash
+mix a2ui.demo
+```
+
+Open [http://localhost:4002](http://localhost:4002). The demo shows:
+
+1. A booking form with text input, date picker, slider, and multi-select
+2. Two-way data binding — form values update the data model in real time
+3. Action dispatch — clicking "Reserve Table" sends an action to the agent
+4. Dynamic UI updates — the agent replaces the form with a confirmation screen
+
+## How It Works
+
+A2UI maps naturally to Phoenix LiveView:
+
+| A2UI Concept | Phoenix/LiveView Equivalent |
+|---|---|
+| Streaming JSONL messages | LiveView WebSocket push to browser |
+| Declarative component tree | Phoenix function components + HEEx |
+| Data model (JSON document) | LiveView assigns |
+| User actions → agent | `phx-click` / `phx-change` events |
+| Incremental updates | LiveView diff engine |
+| Surface lifecycle | LiveView mount/unmount |
+
+**Message flow:**
+
+1. Agent sends A2UI messages (CreateSurface, UpdateComponents, UpdateDataModel)
+2. Transport delivers them as `{:a2ui_message, msg}` to the LiveView process
+3. `SurfaceManager` applies messages to update surface state in assigns
+4. Renderer walks the component adjacency list from `"root"`, dispatching each type to a function component
+5. User interactions trigger `phx-click`/`phx-change` events
+6. `EventHandler` builds an A2UI Action message with resolved context bindings
+7. `handle_a2ui_action/3` callback dispatches the action back to the agent
+
+## Component Types
+
+| Category | Components |
+|---|---|
+| **Layout** | Row, Column, List |
+| **Display** | Text, Image, Icon, Divider |
+| **Input** | TextField, CheckBox, ChoicePicker, Slider, DateTimeInput |
+| **Container** | Card, Tabs, Modal |
+| **Interactive** | Button |
+
+Components use a flat adjacency list — parent-child relationships are ID references, not nesting. This enables incremental streaming and efficient updates by ID.
+
+## Installation
+
+Add `a2ui` to your list of dependencies in `mix.exs`:
+
+```elixir
+def deps do
+  [
+    {:a2ui, "~> 0.1.0"}
+  ]
+end
+```
+
+Requires `phoenix_live_view ~> 1.0` and `phoenix_html ~> 4.0` (pulled in as transitive dependencies).
+
+## Development
+
+```bash
+mix deps.get
+mix test
+mix compile --warnings-as-errors
+```
+
+Requires Elixir ~> 1.17.
+
+## Not Yet Implemented
+
+- **Remote transports** — SSE/HTTP, A2A protocol integration (via [a2a-elixir](https://github.com/actioncard/a2a-elixir))
+- **Catalog validation** — verifying components against catalog schema
+- **Theming** — `primaryColor`, `iconUrl`, `agentDisplayName` from CreateSurface
+- **JS interactivity** — client-side tab switching and modal open/close
+- **Video / AudioPlayer** — not yet rendered
+- **Client-side functions** — validation (`required`, `email`, etc.) and formatting (`formatDate`, etc.)
+
+## Links
+
+- [A2UI Protocol Specification](https://a2ui.org/)
+- [A2UI v0.9 Spec](https://a2ui.org/specification/v0.9-a2ui/)
+- [Hex Package](https://hex.pm/packages/a2ui)
+- [Documentation](https://hexdocs.pm/a2ui)
+
+## License
+
+Apache-2.0 — see [LICENSE](LICENSE).
