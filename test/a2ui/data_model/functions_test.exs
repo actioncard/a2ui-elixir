@@ -8,7 +8,8 @@ defmodule A2UI.DataModel.FunctionsTest do
 
   describe "evaluate/4 dispatch" do
     test "unknown function returns :pass_through" do
-      assert :pass_through = Functions.evaluate("openUrl", %{"url" => "https://example.com"}, dm(), nil)
+      assert :pass_through =
+               Functions.evaluate("openUrl", %{"url" => "https://example.com"}, dm(), nil)
     end
 
     test "known function with unresolvable arg returns :pass_through" do
@@ -24,11 +25,14 @@ defmodule A2UI.DataModel.FunctionsTest do
 
     test "interpolates data model paths" do
       data = dm(%{"user" => %{"name" => "Alice"}})
-      assert {:ok, "Hello, Alice!"} = Functions.evaluate("formatString", %{"value" => "Hello, ${user/name}!"}, data, nil)
+
+      assert {:ok, "Hello, Alice!"} =
+               Functions.evaluate("formatString", %{"value" => "Hello, ${user/name}!"}, data, nil)
     end
 
     test "missing path keeps placeholder" do
-      assert {:ok, "Hello, ${missing}!"} = Functions.evaluate("formatString", %{"value" => "Hello, ${missing}!"}, dm(), nil)
+      assert {:ok, "Hello, ${missing}!"} =
+               Functions.evaluate("formatString", %{"value" => "Hello, ${missing}!"}, dm(), nil)
     end
 
     test "escaped dollar-brace passes through as literal" do
@@ -40,7 +44,12 @@ defmodule A2UI.DataModel.FunctionsTest do
       data = dm(%{"template" => "Count: ${count}", "count" => 42})
 
       assert {:ok, "Count: 42"} =
-               Functions.evaluate("formatString", %{"value" => %{"path" => "/template"}}, data, nil)
+               Functions.evaluate(
+                 "formatString",
+                 %{"value" => %{"path" => "/template"}},
+                 data,
+                 nil
+               )
     end
 
     test "non-string value returns :pass_through" do
@@ -50,17 +59,28 @@ defmodule A2UI.DataModel.FunctionsTest do
 
   describe "formatNumber" do
     test "integer with grouping" do
-      assert {:ok, "1,234,567"} = Functions.evaluate("formatNumber", %{"value" => 1_234_567}, dm(), nil)
+      assert {:ok, "1,234,567"} =
+               Functions.evaluate("formatNumber", %{"value" => 1_234_567}, dm(), nil)
     end
 
     test "integer without grouping" do
       assert {:ok, "1234567"} =
-               Functions.evaluate("formatNumber", %{"value" => 1_234_567, "grouping" => false}, dm(), nil)
+               Functions.evaluate(
+                 "formatNumber",
+                 %{"value" => 1_234_567, "grouping" => false},
+                 dm(),
+                 nil
+               )
     end
 
     test "float with decimals" do
       assert {:ok, "1,234.50"} =
-               Functions.evaluate("formatNumber", %{"value" => 1234.5, "decimals" => 2}, dm(), nil)
+               Functions.evaluate(
+                 "formatNumber",
+                 %{"value" => 1234.5, "decimals" => 2},
+                 dm(),
+                 nil
+               )
     end
 
     test "integer with decimals" do
@@ -82,7 +102,12 @@ defmodule A2UI.DataModel.FunctionsTest do
 
     test "negative float" do
       assert {:ok, "-1,234.56"} =
-               Functions.evaluate("formatNumber", %{"value" => -1234.56, "decimals" => 2}, dm(), nil)
+               Functions.evaluate(
+                 "formatNumber",
+                 %{"value" => -1234.56, "decimals" => 2},
+                 dm(),
+                 nil
+               )
     end
 
     test "value from path binding" do
@@ -99,7 +124,12 @@ defmodule A2UI.DataModel.FunctionsTest do
 
     test "zero decimals strips decimal part" do
       assert {:ok, "1,234"} =
-               Functions.evaluate("formatNumber", %{"value" => 1234.5, "decimals" => 0}, dm(), nil)
+               Functions.evaluate(
+                 "formatNumber",
+                 %{"value" => 1234.5, "decimals" => 0},
+                 dm(),
+                 nil
+               )
     end
 
     test "missing value returns :pass_through" do
@@ -120,22 +150,42 @@ defmodule A2UI.DataModel.FunctionsTest do
 
     test "EUR" do
       assert {:ok, "€100.00"} =
-               Functions.evaluate("formatCurrency", %{"value" => 100, "currency" => "EUR"}, dm(), nil)
+               Functions.evaluate(
+                 "formatCurrency",
+                 %{"value" => 100, "currency" => "EUR"},
+                 dm(),
+                 nil
+               )
     end
 
     test "SEK" do
       assert {:ok, "kr500.00"} =
-               Functions.evaluate("formatCurrency", %{"value" => 500, "currency" => "SEK"}, dm(), nil)
+               Functions.evaluate(
+                 "formatCurrency",
+                 %{"value" => 500, "currency" => "SEK"},
+                 dm(),
+                 nil
+               )
     end
 
     test "JPY zero-decimal currency" do
       assert {:ok, "¥1,000"} =
-               Functions.evaluate("formatCurrency", %{"value" => 1000, "currency" => "JPY"}, dm(), nil)
+               Functions.evaluate(
+                 "formatCurrency",
+                 %{"value" => 1000, "currency" => "JPY"},
+                 dm(),
+                 nil
+               )
     end
 
     test "unknown currency uses code as symbol" do
       assert {:ok, "BRL100.00"} =
-               Functions.evaluate("formatCurrency", %{"value" => 100, "currency" => "BRL"}, dm(), nil)
+               Functions.evaluate(
+                 "formatCurrency",
+                 %{"value" => 100, "currency" => "BRL"},
+                 dm(),
+                 nil
+               )
     end
 
     test "custom decimals override" do
@@ -328,7 +378,8 @@ defmodule A2UI.DataModel.FunctionsTest do
     end
 
     test "one false" do
-      assert {:ok, false} = Functions.evaluate("and", %{"values" => [true, false, true]}, dm(), nil)
+      assert {:ok, false} =
+               Functions.evaluate("and", %{"values" => [true, false, true]}, dm(), nil)
     end
 
     test "empty list is true" do
@@ -354,7 +405,8 @@ defmodule A2UI.DataModel.FunctionsTest do
 
   describe "or" do
     test "one true" do
-      assert {:ok, true} = Functions.evaluate("or", %{"values" => [false, true, false]}, dm(), nil)
+      assert {:ok, true} =
+               Functions.evaluate("or", %{"values" => [false, true, false]}, dm(), nil)
     end
 
     test "all false" do
@@ -385,7 +437,9 @@ defmodule A2UI.DataModel.FunctionsTest do
 
     test "value from path binding" do
       data = dm(%{"flag" => true})
-      assert {:ok, false} = Functions.evaluate("not", %{"value" => %{"path" => "/flag"}}, data, nil)
+
+      assert {:ok, false} =
+               Functions.evaluate("not", %{"value" => %{"path" => "/flag"}}, data, nil)
     end
   end
 end
