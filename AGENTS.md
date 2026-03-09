@@ -36,10 +36,47 @@
 
 ## Demo App
 
-- Lives under `lib/a2ui/demo/` and the `A2UI.Demo.*` namespace
-- Not part of the published library — embedded example only
+- Lives under `dev/demo/` and the `A2UI.Demo.*` namespace
+- Not part of the published hex package — dev/test only
+- Compiled only in `:dev` and `:test` environments (see `elixirc_paths` in mix.exs)
 - Config in `config/config.exs` is demo-specific, not library config
 - Run with `mix a2ui.demo`
+
+## Package Info
+
+- Hex package name: `a2ui`
+- Version: 0.1.0
+- Source: https://github.com/actioncard/a2ui-elixir
+- License: Apache-2.0
+- Maintainer: Action Card AB
+
+## Architecture
+
+```
+Agent (GenServer / A2A Remote Agent)
+  │ {:a2ui_message, msg} / PubSub
+  ▼
+Transport Layer (A2UI.Transport behaviour)
+  │
+  ▼
+LiveView Process (use A2UI.Live)
+  ├─ handle_info({:a2ui_message, msg}) → SurfaceManager → assign
+  ├─ render: <.surface /> → Renderer walks adjacency list → function components
+  ├─ handle_event("a2ui_action") → EventHandler → Transport → agent
+  └─ handle_event("a2ui_input_change") → updates local data model
+  │
+  ▼ LiveView WebSocket
+Browser (native HTML, phx-click / phx-change events)
+```
+
+## Key Design Decisions
+
+1. **Function Components** (not LiveComponents) — surface state managed centrally in LiveView assigns via SurfaceManager
+2. **Pure Functional SurfaceManager** — `apply_message(surfaces, msg) → surfaces`, no GenServer needed
+3. **Data Binding Resolved at Render Time** — props stay as raw JSON until render, LiveView diff engine detects changes
+4. **Adjacency List Stays Flat** — renderer walks `%{id => component}` map via ID lookups, no tree reconstruction
+5. **CSS Convention** — `a2ui-*` BEM-style classes, layout via CSS utility classes, weight via `--a2ui-weight` custom property
+6. **Transport as Behaviour** — `A2UI.Transport` behaviour; `Local` (process messages) now, SSE/A2A later
 
 ## Do NOT
 
