@@ -454,8 +454,10 @@ a2ui/
         video.ex
         audio_player.ex
 
-      # ── Demo Application (dev only) ──
-      demo/
+  # ── Demo Application (dev/test only, not published) ──
+  dev/
+    demo/
+      a2ui/demo/
         agent.ex                         # Demo agent GenServer
         demo_live.ex                     # Demo LiveView page
         endpoint.ex                      # Phoenix Endpoint for demo
@@ -463,9 +465,7 @@ a2ui/
         layouts.ex                       # Layout components
         router.ex                        # Demo routes
         status_badge.ex                  # Custom component example
-
-    mix/
-      tasks/
+      mix/tasks/
         a2ui.demo.ex                     # Mix task to run the demo
 
   test/
@@ -560,20 +560,7 @@ end
 - **Phase 6**: Extract Shared Component Helpers (`input_attrs/2,3`, `resolve_child/3`, `expand_template_entries/2` into Renderer)
 - **Phase 7**: Remove dead code (`A2UI.Components` module) + rename `live_component_fn/1` → `dispatch_render/1`
 - **Phase 8+9**: CSS Class Cleanup + Styling Overhaul (replaced all inline styles with CSS classes, `flex_style/2` → `layout_classes/1` + `weight_style/1`, image fit/tabs/modal visibility via classes)
-
-234 tests, all passing.
-
-### Phase 10: Isolate Demo from Package
-
-Move demo files out of the published library's compilation path.
-
-1. Move `lib/a2ui/demo/` files to `dev/demo/a2ui/demo/` (preserving module namespace)
-2. Update `mix.exs` `elixirc_paths`:
-   - `:dev` → `["lib", "dev/demo"]`
-   - `:test` → `["lib", "test/support"]`
-   - default → `["lib"]`
-3. Gate StatusBadge component_modules config in `config/config.exs` under `if Mix.env() == :dev`
-4. Verify `mix.exs` `package/files` list excludes `dev/`
+- **Phase 10**: Isolate Demo from Package (moved demo files to `dev/demo/`, env-specific config, demo excluded from hex package)
 
 ## Example Usage
 
