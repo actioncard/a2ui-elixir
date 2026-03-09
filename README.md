@@ -205,6 +205,12 @@ a2ui-elixir is a **server-side renderer** — the only one in the A2UI ecosystem
 - **Server-side binding + function evaluation** — `formatString`, `formatNumber`, `formatCurrency`, `formatDate`, `pluralize`, and boolean logic resolved on the server; validation functions (`required`, `regex`, `email`, etc.) run client-side via JS hooks
 - **No client-side A2UI runtime** — the browser receives plain HTML and minimal JS hooks
 
+## Alternative Implementations
+
+[a2ui_lv](https://github.com/lukaszsamson/a2ui_lv) is another server-side LiveView renderer for A2UI. It takes a similar approach to this library — parsing JSONL messages and rendering Phoenix components — but adds support for both **v0.8 and v0.9** of the protocol and includes A2A protocol extension support.
+
+[ex_a2ui](https://github.com/23min/ex_a2ui) implements the opposite end of the protocol: it is a **protocol server** that encodes A2UI surfaces as JSON and pushes them over WebSocket or SSE to client-side renderers. Where this library and a2ui_lv consume A2UI messages, ex_a2ui produces them.
+
 ## Not Yet Implemented
 
 - **`error` message (client→server)** — v0.9 `ValidationFailed` error feedback to the agent
