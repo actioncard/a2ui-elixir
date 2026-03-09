@@ -21,10 +21,11 @@ defmodule A2UI.Demo.Layouts do
       <body>
         <script src="/assets/phoenix/phoenix.min.js"></script>
         <script src="/assets/phoenix_live_view/phoenix_live_view.min.js"></script>
+        <script src="/a2ui-hooks.js"></script>
         {@inner_content}
         <script>
           let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
-          let liveSocket = new LiveView.LiveSocket("/live", Phoenix.Socket, {params: {_csrf_token: csrfToken}});
+          let liveSocket = new LiveView.LiveSocket("/live", Phoenix.Socket, {params: {_csrf_token: csrfToken}, hooks: window.A2UIHooks});
           liveSocket.connect();
         </script>
       </body>

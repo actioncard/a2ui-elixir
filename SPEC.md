@@ -8,12 +8,6 @@ complete. See the codebase and README for current functionality.
 
 ## Components
 
-### Tabs Interactivity
-Tab bar renders statically; clicking tabs doesn't switch panels. Add Phoenix
-JS hook for tab switching.
-- Files: new `priv/static/a2ui-hooks.js`, `lib/a2ui/components/tabs.ex`
-- Ref: [Tabs component](https://a2ui.org/reference/components/#tabs)
-
 ### Modal Interactivity
 Modal overlay renders hidden; no open/dismiss behavior. Add JS hook to toggle
 overlay visibility.

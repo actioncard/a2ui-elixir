@@ -13,7 +13,7 @@ defmodule A2UI.Demo.Endpoint do
   plug(Plug.Static,
     at: "/",
     from: :a2ui,
-    only: ~w(a2ui.css)
+    only: ~w(a2ui.css a2ui-hooks.js)
   )
 
   plug(Plug.Static,

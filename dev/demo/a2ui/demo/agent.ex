@@ -156,13 +156,29 @@ defmodule A2UI.Demo.Agent do
   defp booking_form_components do
     [
       # Root
-      %Component{id: "root", type: "Column", props: %{"children" => ["header", "form-card"]}},
+      %Component{
+        id: "root",
+        type: "Column",
+        props: %{"children" => ["header", "booking-tabs"]}
+      },
 
       # Header
       %Component{
         id: "header",
         type: "Text",
         props: %{"text" => "Book Your Table", "variant" => "h1"}
+      },
+
+      # Tabs
+      %Component{
+        id: "booking-tabs",
+        type: "Tabs",
+        props: %{
+          "tabItems" => [
+            %{"title" => "Reservation", "child" => "form-card"},
+            %{"title" => "Restaurant Info", "child" => "info-card"}
+          ]
+        }
       },
 
       # Card wrapper
@@ -299,6 +315,39 @@ defmodule A2UI.Demo.Agent do
         id: "submit-text",
         type: "Text",
         props: %{"text" => "Reserve Table", "variant" => "body"}
+      },
+
+      # Restaurant info tab
+      %Component{id: "info-card", type: "Card", props: %{"child" => "info-col"}},
+      %Component{
+        id: "info-col",
+        type: "Column",
+        props: %{
+          "children" => ["info-name", "info-address", "info-hours", "info-desc"]
+        }
+      },
+      %Component{
+        id: "info-name",
+        type: "Text",
+        props: %{"text" => "The Golden Fork", "variant" => "h2"}
+      },
+      %Component{
+        id: "info-address",
+        type: "Text",
+        props: %{"text" => "123 Dining Street, Stockholm", "variant" => "body"}
+      },
+      %Component{
+        id: "info-hours",
+        type: "Text",
+        props: %{"text" => "Open daily 11:00–23:00", "variant" => "body"}
+      },
+      %Component{
+        id: "info-desc",
+        type: "Text",
+        props: %{
+          "text" => "Modern Nordic cuisine with a focus on locally sourced ingredients.",
+          "variant" => "caption"
+        }
       }
     ]
   end

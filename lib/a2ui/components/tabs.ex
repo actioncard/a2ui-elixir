@@ -3,7 +3,7 @@ defmodule A2UI.Components.Tabs do
   Renders an A2UI Tabs component.
 
   `tabItems` prop is an array of `%{"title" => str, "child" => id}`.
-  First tab is active by default, rest are hidden. Tab switching deferred to Phase 4 JS hook.
+  First tab is active by default. Uses `A2UITabs` JS hook for client-side tab switching.
   """
 
   use A2UI.ComponentRenderer
@@ -28,7 +28,7 @@ defmodule A2UI.Components.Tabs do
     assigns = assign(assigns, tabs: tabs, a11y: a11y, component_id: assigns.component.id)
 
     ~H"""
-    <div class="a2ui-tabs" id={@component_id} {@a11y}>
+    <div class="a2ui-tabs" id={@component_id} phx-hook="A2UITabs" {@a11y}>
       <div class="a2ui-tabs__bar" role="tablist">
         <button
           :for={tab <- @tabs}
