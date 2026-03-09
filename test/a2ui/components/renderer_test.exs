@@ -163,14 +163,15 @@ defmodule A2UI.Components.RendererTest do
   end
 
   describe "default_components/0" do
-    test "returns all 16 built-in component types" do
+    test "returns all 18 built-in component types" do
       defaults = Renderer.default_components()
 
-      assert map_size(defaults) == 16
+      assert map_size(defaults) == 18
 
       expected_types = ~w(
         Text Row Column List Button Image Icon Divider Card
         TextField CheckBox ChoicePicker Slider DateTimeInput Tabs Modal
+        Video AudioPlayer
       )
 
       for type <- expected_types do

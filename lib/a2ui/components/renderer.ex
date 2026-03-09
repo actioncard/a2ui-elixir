@@ -11,7 +11,7 @@ defmodule A2UI.Components.Renderer do
 
     * `:component_modules` — a `%{String.t() => module()}` map of custom or
       override component modules. Default: `%{}`.
-    * `:use_default_components` — when `true` (the default), the 16 built-in
+    * `:use_default_components` — when `true` (the default), the 18 built-in
       components are included and your custom modules are merged on top.
       Set to `false` to supply your own complete set.
 
@@ -68,7 +68,9 @@ defmodule A2UI.Components.Renderer do
     "Slider" => A2UI.Components.Slider,
     "DateTimeInput" => A2UI.Components.DateTimeInput,
     "Tabs" => A2UI.Components.Tabs,
-    "Modal" => A2UI.Components.Modal
+    "Modal" => A2UI.Components.Modal,
+    "Video" => A2UI.Components.Video,
+    "AudioPlayer" => A2UI.Components.AudioPlayer
   }
 
   @custom_components Application.compile_env(:a2ui, :component_modules, %{})

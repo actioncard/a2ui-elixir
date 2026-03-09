@@ -452,6 +452,8 @@ a2ui/
         choice_picker.ex
         slider.ex
         date_time_input.ex
+        video.ex
+        audio_player.ex
 
       # ── Demo Application (dev only) ──
       demo/
@@ -488,6 +490,7 @@ a2ui/
         input_test.exs
         layout_test.exs
         container_test.exs
+        media_test.exs
       live/
         event_handler_test.exs
       transport/
@@ -551,28 +554,12 @@ end
 
 - **Phase 1**: Core Protocol + Data Structures (JSON Pointer, DataModel, Component, Surface, message structs, JSONL parser)
 - **Phase 2**: State Management + Data Binding (Binding resolution, ComponentTree, SurfaceManager)
-- **Phase 3**: Phoenix Components + Renderer (16 built-in components, type dispatch, Floki tests)
+- **Phase 3**: Phoenix Components + Renderer (18 built-in components, type dispatch, Floki tests)
 - **Phase 4**: LiveView Integration + Events (EventHandler, `use A2UI.Live` macro, Transport behaviour, Transport.Local)
+- **Phase 5**: Video & AudioPlayer components (complete basic catalog coverage)
 - **Demo**: Demo application with agent, LiveView page, custom StatusBadge component
 
-212 tests, all passing.
-
-### Phase 5: Missing Catalog Components
-
-Add `Video` and `AudioPlayer` components from the A2UI basic catalog (listed in spec but not yet implemented).
-
-1. **`Video` component** (`lib/a2ui/components/video.ex`)
-   - Renders `<video>` tag with `a2ui-video` class
-   - Props: `url` (string/binding → `src`), `autoplay` (boolean → attribute), `controls` (boolean → attribute, default true)
-   - Use `resolve_prop` for url binding, `a11y_attrs` for accessibility
-   - Wrap in `<div class="a2ui-video">` for consistency
-2. **`AudioPlayer` component** (`lib/a2ui/components/audio_player.ex`)
-   - Renders `<audio>` tag with `a2ui-audio-player` class
-   - Props: `url` (string/binding → `src`), `controls` (boolean → attribute, default true)
-   - Same pattern as Video
-3. Register both in `@default_components` map in `Renderer` (`lib/a2ui/components/renderer.ex`)
-4. Add tests in `test/a2ui/components/` following existing patterns (use `make_component`, `make_ctx` from `test/support/component_helpers.ex`)
-5. Update `@default_components` count reference in `Renderer` moduledoc ("16 built-in" → "18 built-in")
+232 tests, all passing.
 
 ### Phase 6: Extract Shared Component Helpers
 
