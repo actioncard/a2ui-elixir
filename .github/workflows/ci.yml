@@ -104,8 +104,29 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun test
+
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.18"
+          otp-version: "27"
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v5
+        with:
+          path: deps
+          key: deps-${{ runner.os }}-1.18-27-${{ hashFiles('**/mix.lock') }}
+          restore-keys: deps-${{ runner.os }}-1.18-27-
+
+      - name: Restore build cache
+        uses: actions/cache@v5
+        with:
+          path: _build
+          key: build-${{ runner.os }}-1.18-27-${{ hashFiles('**/mix.lock') }}
+          restore-keys: build-${{ runner.os }}-1.18-27-
+
+      - run: mix deps.get
+
+      - run: mix bun test
 
   publish:
     name: Publish to Hex
