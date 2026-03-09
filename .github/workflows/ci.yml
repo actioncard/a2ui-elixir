@@ -99,10 +99,18 @@ jobs:
 
       - run: mix test --warnings-as-errors
 
+  test-js:
+    name: JS Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+      - run: bun test
+
   publish:
     name: Publish to Hex
     if: github.event_name == 'release'
-    needs: [quality, test]
+    needs: [quality, test, test-js]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6

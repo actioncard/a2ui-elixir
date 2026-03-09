@@ -1,5 +1,5 @@
 // A2UI Phoenix LiveView Hooks
-window.A2UIHooks = {
+const A2UIHooks = {
   A2UITabs: {
     mounted() {
       this.el.addEventListener("click", (e) => {
@@ -172,3 +172,9 @@ const A2UI_VALIDATORS = {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   }
 };
+
+// Browser: attach to window for LiveView hook registration
+if (typeof window !== "undefined") window.A2UIHooks = A2UIHooks;
+
+// Test: CommonJS export for Bun
+if (typeof module !== "undefined") module.exports = { A2UIHooks, A2UI_VALIDATORS };

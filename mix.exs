@@ -43,14 +43,17 @@ defmodule A2UI.MixProject do
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:bandit, "~> 1.0", only: :dev},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:bun, "~> 2.0", only: [:dev, :test], runtime: false}
     ]
   end
 
   defp aliases do
     [
       quality: ["format --check-formatted", "credo --strict", "dialyzer"],
-      "test.ci": ["test --warnings-as-errors"]
+      "test.js": ["bun test"],
+      "test.all": ["test", "bun test"],
+      "test.ci": ["test --warnings-as-errors", "bun test"]
     ]
   end
 
