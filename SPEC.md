@@ -6,16 +6,6 @@ complete. See the codebase and README for current functionality.
 
 ---
 
-## Components
-
-### Image `variant` Prop
-Only `fit` is implemented; `variant` (hero/thumbnail) is ignored. Add CSS
-classes and apply in Image component.
-- Files: `lib/a2ui/components/image.ex`, `priv/static/a2ui.css`
-- Ref: [Image component](https://a2ui.org/reference/components/#image)
-
----
-
 ## Rendering
 
 ### Theme CSS Variables

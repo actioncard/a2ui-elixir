@@ -180,6 +180,12 @@
 .a2ui-image--fit-fill { object-fit: fill; }
 .a2ui-image--fit-none { object-fit: none; }
 .a2ui-image--fit-scale-down { object-fit: scale-down; }
+.a2ui-image--icon { width: 1.5rem; height: 1.5rem; border-radius: var(--a2ui-radius-sm); }
+.a2ui-image--avatar { width: 3rem; height: 3rem; border-radius: 50%; object-fit: cover; }
+.a2ui-image--small-feature { max-width: 12rem; }
+.a2ui-image--medium-feature { max-width: 24rem; }
+.a2ui-image--large-feature { max-width: 40rem; }
+.a2ui-image--header { width: 100%; max-height: 20rem; object-fit: cover; }
 
 /* List */
 .a2ui-list { display: flex; flex-direction: column; }

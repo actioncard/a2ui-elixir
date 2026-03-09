@@ -65,6 +65,47 @@ defmodule A2UI.Components.DisplayTest do
 
       assert html =~ "a2ui-image--fit-cover"
     end
+
+    test "defaults to medium-feature variant" do
+      component = make_component("img", "Image", %{"url" => "pic.jpg"})
+      ctx = make_ctx(%{"img" => component})
+      assigns = %{component: component, ctx: ctx}
+
+      html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
+
+      assert html =~ "a2ui-image--medium-feature"
+    end
+
+    test "applies avatar variant class" do
+      component =
+        make_component("img", "Image", %{
+          "url" => "pic.jpg",
+          "variant" => "avatar"
+        })
+
+      ctx = make_ctx(%{"img" => component})
+      assigns = %{component: component, ctx: ctx}
+
+      html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
+
+      assert html =~ "a2ui-image--avatar"
+      refute html =~ "a2ui-image--medium-feature"
+    end
+
+    test "applies smallFeature variant as kebab-case class" do
+      component =
+        make_component("img", "Image", %{
+          "url" => "pic.jpg",
+          "variant" => "smallFeature"
+        })
+
+      ctx = make_ctx(%{"img" => component})
+      assigns = %{component: component, ctx: ctx}
+
+      html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
+
+      assert html =~ "a2ui-image--small-feature"
+    end
   end
 
   describe "Icon component" do
