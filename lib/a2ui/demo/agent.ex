@@ -306,13 +306,31 @@ defmodule A2UI.Demo.Agent do
   defp confirmation_components(name, date, guests, dietary_text) do
     [
       # Root
-      %Component{id: "root", type: "Column", props: %{"children" => ["header", "form-card"]}},
+      %Component{
+        id: "root",
+        type: "Column",
+        props: %{"children" => ["header-row", "form-card"]}
+      },
 
-      # Header
+      # Header row with text + status badge
+      %Component{
+        id: "header-row",
+        type: "Row",
+        props: %{
+          "children" => ["header", "status-badge"],
+          "align" => "center"
+        }
+      },
       %Component{
         id: "header",
         type: "Text",
         props: %{"text" => "Reservation Confirmed!", "variant" => "h1"}
+      },
+      %Component{
+        id: "status-badge",
+        type: "StatusBadge",
+        props: %{"status" => "confirmed"},
+        accessibility: %{"label" => "Booking status: confirmed"}
       },
 
       # Card

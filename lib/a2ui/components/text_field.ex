@@ -5,9 +5,7 @@ defmodule A2UI.Components.TextField do
   Types: `shortText` → text, `number` → number, `obscured` → password, `longText` → textarea.
   """
 
-  use Phoenix.Component
-
-  alias A2UI.Components.Renderer
+  use A2UI.ComponentRenderer
 
   @type_map %{
     "shortText" => "text",
@@ -18,14 +16,15 @@ defmodule A2UI.Components.TextField do
   attr(:component, :any, required: true)
   attr(:ctx, :any, required: true)
 
+  @impl true
   def render(assigns) do
     props = assigns.component.props
-    label = Renderer.resolve_prop(props, "label", assigns.ctx)
-    value = Renderer.resolve_prop(props, "value", assigns.ctx, "")
+    label = resolve_prop(props, "label", assigns.ctx)
+    value = resolve_prop(props, "value", assigns.ctx, "")
     field_type = Map.get(props, "textFieldType", "shortText")
-    path = Renderer.binding_path(Map.get(props, "value"))
+    path = binding_path(Map.get(props, "value"))
     checks = Map.get(props, "checks")
-    a11y = Renderer.a11y_attrs(assigns.component.accessibility)
+    a11y = a11y_attrs(assigns.component.accessibility)
     surface_id = assigns.ctx.surface_id
 
     input_attrs = input_attrs(path, surface_id)

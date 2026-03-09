@@ -5,17 +5,16 @@ defmodule A2UI.Components.Divider do
   Horizontal (default): `<hr>`. Vertical: `<div role="separator">`.
   """
 
-  use Phoenix.Component
-
-  alias A2UI.Components.Renderer
+  use A2UI.ComponentRenderer
 
   attr(:component, :any, required: true)
   attr(:ctx, :any, required: true)
 
+  @impl true
   def render(assigns) do
     props = assigns.component.props
     axis = Map.get(props, "axis", "horizontal")
-    a11y = Renderer.a11y_attrs(assigns.component.accessibility)
+    a11y = a11y_attrs(assigns.component.accessibility)
 
     assigns = assign(assigns, axis: axis, a11y: a11y)
 

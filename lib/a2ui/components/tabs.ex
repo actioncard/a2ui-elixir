@@ -6,17 +6,16 @@ defmodule A2UI.Components.Tabs do
   First tab is active by default, rest are hidden. Tab switching deferred to Phase 4 JS hook.
   """
 
-  use Phoenix.Component
-
-  alias A2UI.Components.Renderer
+  use A2UI.ComponentRenderer
 
   attr(:component, :any, required: true)
   attr(:ctx, :any, required: true)
 
+  @impl true
   def render(assigns) do
     props = assigns.component.props
     tab_items = Map.get(props, "tabItems", [])
-    a11y = Renderer.a11y_attrs(assigns.component.accessibility)
+    a11y = a11y_attrs(assigns.component.accessibility)
 
     tabs =
       tab_items
@@ -47,7 +46,7 @@ defmodule A2UI.Components.Tabs do
         role="tabpanel"
         style={unless tab.active, do: "display:none"}
       >
-        <Renderer.component :if={tab.child} component={tab.child} ctx={@ctx} />
+        <.component :if={tab.child} component={tab.child} ctx={@ctx} />
       </div>
     </div>
     """

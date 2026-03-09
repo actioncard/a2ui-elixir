@@ -6,20 +6,21 @@ defmodule A2UI.Components.ListComponent do
   Direction prop: `vertical` (default) → column, `horizontal` → row.
   """
 
-  use Phoenix.Component
+  use A2UI.ComponentRenderer
 
   alias A2UI.ComponentTree
-  alias A2UI.Components.{Renderer, RenderContext}
+  alias A2UI.Components.RenderContext
 
   attr(:component, :any, required: true)
   attr(:ctx, :any, required: true)
 
+  @impl true
   def render(assigns) do
     props = assigns.component.props
     direction = Map.get(props, "direction", "vertical")
     flex_dir = if direction == "horizontal", do: "row", else: "column"
-    style = Renderer.flex_style(props, flex_dir)
-    a11y = Renderer.a11y_attrs(assigns.component.accessibility)
+    style = flex_style(props, flex_dir)
+    a11y = a11y_attrs(assigns.component.accessibility)
     children = resolve_children(assigns.component, assigns.ctx)
 
     assigns = assign(assigns, style: style, a11y: a11y, children: children)
@@ -27,7 +28,7 @@ defmodule A2UI.Components.ListComponent do
     ~H"""
     <div class="a2ui-list" role="list" style={@style} {@a11y}>
       <div :for={{child, scope} <- @children} class="a2ui-list__item" role="listitem">
-        <Renderer.component component={child} ctx={maybe_scope(@ctx, scope)} />
+        <.component component={child} ctx={maybe_scope(@ctx, scope)} />
       </div>
     </div>
     """

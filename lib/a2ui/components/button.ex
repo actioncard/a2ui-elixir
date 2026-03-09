@@ -5,18 +5,17 @@ defmodule A2UI.Components.Button do
   Emits `phx-click="a2ui_action"` for server actions, `data-a2ui-action` for local actions.
   """
 
-  use Phoenix.Component
-
-  alias A2UI.Components.Renderer
+  use A2UI.ComponentRenderer
 
   attr(:component, :any, required: true)
   attr(:ctx, :any, required: true)
 
+  @impl true
   def render(assigns) do
     props = assigns.component.props
     variant = Map.get(props, "variant", "default")
     action = Map.get(props, "action")
-    a11y = Renderer.a11y_attrs(assigns.component.accessibility)
+    a11y = a11y_attrs(assigns.component.accessibility)
     class = "a2ui-button a2ui-button--#{variant}"
     action_attrs = action_attrs(action, assigns.component.id, assigns.ctx.surface_id)
 
@@ -30,7 +29,7 @@ defmodule A2UI.Components.Button do
 
     ~H"""
     <button class={@class} {@action_attrs} {@a11y}>
-      <Renderer.component :if={@child} component={@child} ctx={@ctx} />
+      <.component :if={@child} component={@child} ctx={@ctx} />
     </button>
     """
   end

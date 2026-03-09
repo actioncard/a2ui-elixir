@@ -1,5 +1,10 @@
 import Config
 
+config :a2ui,
+  component_modules: %{
+    "StatusBadge" => A2UI.Demo.StatusBadge
+  }
+
 config :a2ui, A2UI.Demo.Endpoint,
   http: [port: 4002],
   server: false,

@@ -112,6 +112,42 @@ A2UI maps naturally to Phoenix LiveView:
 
 Components use a flat adjacency list — parent-child relationships are ID references, not nesting. This enables incremental streaming and efficient updates by ID.
 
+## Custom Components
+
+Override built-in components or add new types by implementing the `A2UI.ComponentRenderer` behaviour and registering in config.
+
+**Override a built-in:**
+
+```elixir
+# config/config.exs
+config :a2ui, component_modules: %{
+  "Button" => MyApp.A2UI.Button
+}
+```
+
+**Add a new type:**
+
+```elixir
+defmodule MyApp.A2UI.StatusBadge do
+  use A2UI.ComponentRenderer
+
+  @impl true
+  def render(assigns) do
+    status = resolve_prop(assigns.component.props, "status", assigns.ctx, "unknown")
+    assigns = assign(assigns, status: status)
+
+    ~H"""
+    <span class={"badge badge--#{@status}"}>{@status}</span>
+    """
+  end
+end
+
+# config/config.exs
+config :a2ui, component_modules: %{"StatusBadge" => MyApp.A2UI.StatusBadge}
+```
+
+Set `use_default_components: false` to replace all built-in components with your own. See the `A2UI.ComponentRenderer` and `A2UI.Components.Renderer` hexdocs for the full assigns contract, available helpers, and configuration details.
+
 ## Installation
 
 Add `a2ui` to your list of dependencies in `mix.exs`:

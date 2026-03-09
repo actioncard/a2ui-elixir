@@ -211,3 +211,19 @@
   max-height: 90vh;
   overflow: auto;
 }
+
+/* StatusBadge */
+.a2ui-status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.7rem;
+  border-radius: 9999px;
+  line-height: 1.5;
+  background: #e5e7eb;
+  color: #374151;
+}
+.a2ui-status-badge--confirmed { background: #d1fae5; color: #065f46; }
+.a2ui-status-badge--pending { background: #fef3c7; color: #92400e; }
+.a2ui-status-badge--unknown { background: #e5e7eb; color: #374151; }

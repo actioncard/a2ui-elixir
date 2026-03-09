@@ -162,6 +162,30 @@ defmodule A2UI.Components.RendererTest do
     end
   end
 
+  describe "default_components/0" do
+    test "returns all 16 built-in component types" do
+      defaults = Renderer.default_components()
+
+      assert map_size(defaults) == 16
+
+      expected_types = ~w(
+        Text Row Column List Button Image Icon Divider Card
+        TextField CheckBox ChoicePicker Slider DateTimeInput Tabs Modal
+      )
+
+      for type <- expected_types do
+        assert Map.has_key?(defaults, type), "missing type: #{type}"
+      end
+    end
+
+    test "maps types to their expected modules" do
+      defaults = Renderer.default_components()
+      assert defaults["Text"] == A2UI.Components.Text
+      assert defaults["Button"] == A2UI.Components.Button
+      assert defaults["List"] == A2UI.Components.ListComponent
+    end
+  end
+
   describe "resolve_prop/4" do
     test "resolves literal values" do
       ctx = make_ctx(%{})

@@ -8,22 +8,21 @@ defmodule A2UI.Components.DateTimeInput do
   - both → `<input type="datetime-local">`
   """
 
-  use Phoenix.Component
-
-  alias A2UI.Components.Renderer
+  use A2UI.ComponentRenderer
 
   attr(:component, :any, required: true)
   attr(:ctx, :any, required: true)
 
+  @impl true
   def render(assigns) do
     props = assigns.component.props
-    label = Renderer.resolve_prop(props, "label", assigns.ctx)
-    value = Renderer.resolve_prop(props, "value", assigns.ctx, "")
+    label = resolve_prop(props, "label", assigns.ctx)
+    value = resolve_prop(props, "value", assigns.ctx, "")
     enable_date = Map.get(props, "enableDate", false)
     enable_time = Map.get(props, "enableTime", false)
     html_type = input_type(enable_date, enable_time)
-    path = Renderer.binding_path(Map.get(props, "value"))
-    a11y = Renderer.a11y_attrs(assigns.component.accessibility)
+    path = binding_path(Map.get(props, "value"))
+    a11y = a11y_attrs(assigns.component.accessibility)
     surface_id = assigns.ctx.surface_id
     input_attrs = input_attrs(path, surface_id)
 

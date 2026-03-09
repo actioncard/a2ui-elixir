@@ -2,7 +2,49 @@ defmodule A2UI.Components.Renderer do
   @moduledoc """
   Entry point for rendering A2UI surfaces as Phoenix function components.
 
-  Dispatches each component type to its module via a compile-time map.
+  Dispatches each component type to its module via a compile-time type
+  registry built from default components and application config.
+
+  ## Compile-time configuration
+
+  The type registry is assembled at compile time from two config keys:
+
+    * `:component_modules` — a `%{String.t() => module()}` map of custom or
+      override component modules. Default: `%{}`.
+    * `:use_default_components` — when `true` (the default), the 16 built-in
+      components are included and your custom modules are merged on top.
+      Set to `false` to supply your own complete set.
+
+  ### Override a built-in component
+
+      # config/config.exs
+      config :a2ui, component_modules: %{
+        "Button" => MyApp.A2UI.Button
+      }
+
+  ### Add a new component type
+
+      config :a2ui, component_modules: %{
+        "StatusBadge" => MyApp.A2UI.StatusBadge
+      }
+
+  ### Replace all defaults
+
+      config :a2ui,
+        use_default_components: false,
+        component_modules: %{
+          "Text" => MyApp.A2UI.Text,
+          "Button" => MyApp.A2UI.Button
+          # ... only your modules are used
+        }
+
+  Use `default_components/0` to inspect the built-in type → module map at
+  runtime (e.g. to merge programmatically in a test).
+
+  ## Writing custom components
+
+  See `A2UI.ComponentRenderer` for the behaviour, assigns contract, available
+  helpers, and a full example.
   """
 
   use Phoenix.Component
@@ -10,7 +52,7 @@ defmodule A2UI.Components.Renderer do
   alias A2UI.{ComponentTree, DataModel.Binding}
   alias A2UI.Components.RenderContext
 
-  @type_modules %{
+  @default_components %{
     "Text" => A2UI.Components.Text,
     "Row" => A2UI.Components.Row,
     "Column" => A2UI.Components.Column,
@@ -28,6 +70,18 @@ defmodule A2UI.Components.Renderer do
     "Tabs" => A2UI.Components.Tabs,
     "Modal" => A2UI.Components.Modal
   }
+
+  @custom_components Application.compile_env(:a2ui, :component_modules, %{})
+  @use_defaults Application.compile_env(:a2ui, :use_default_components, true)
+  @type_modules if @use_defaults,
+                  do: Map.merge(@default_components, @custom_components),
+                  else: @custom_components
+
+  @doc """
+  Returns the default component type→module map.
+  """
+  @spec default_components() :: %{String.t() => module()}
+  def default_components, do: @default_components
 
   # ── Public function components ──
 

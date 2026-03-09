@@ -6,21 +6,20 @@ defmodule A2UI.Components.ChoicePicker do
   Multiple selection: checkboxes.
   """
 
-  use Phoenix.Component
-
-  alias A2UI.Components.Renderer
+  use A2UI.ComponentRenderer
 
   attr(:component, :any, required: true)
   attr(:ctx, :any, required: true)
 
+  @impl true
   def render(assigns) do
     props = assigns.component.props
     options = Map.get(props, "options", [])
-    selections = Renderer.resolve_prop(props, "selections", assigns.ctx, [])
+    selections = resolve_prop(props, "selections", assigns.ctx, [])
     max = Map.get(props, "maxAllowedSelections", 0)
     single = max == 1
-    path = Renderer.binding_path(Map.get(props, "selections"))
-    a11y = Renderer.a11y_attrs(assigns.component.accessibility)
+    path = binding_path(Map.get(props, "selections"))
+    a11y = a11y_attrs(assigns.component.accessibility)
     surface_id = assigns.ctx.surface_id
     input_type = if single, do: "radio", else: "checkbox"
     input_attrs = input_attrs(path, surface_id, input_type)

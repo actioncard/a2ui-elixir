@@ -6,16 +6,15 @@ defmodule A2UI.Components.Modal do
   Toggle deferred to Phase 4 JS hook.
   """
 
-  use Phoenix.Component
-
-  alias A2UI.Components.Renderer
+  use A2UI.ComponentRenderer
 
   attr(:component, :any, required: true)
   attr(:ctx, :any, required: true)
 
+  @impl true
   def render(assigns) do
     props = assigns.component.props
-    a11y = Renderer.a11y_attrs(assigns.component.accessibility)
+    a11y = a11y_attrs(assigns.component.accessibility)
 
     entry_child =
       case Map.get(props, "entryPointChild") do
@@ -40,11 +39,11 @@ defmodule A2UI.Components.Modal do
     ~H"""
     <div class="a2ui-modal" id={@component_id} {@a11y}>
       <div :if={@entry_child} class="a2ui-modal__entry">
-        <Renderer.component component={@entry_child} ctx={@ctx} />
+        <.component component={@entry_child} ctx={@ctx} />
       </div>
       <div :if={@content_child} class="a2ui-modal__overlay" style="display:none" role="dialog">
         <div class="a2ui-modal__content">
-          <Renderer.component component={@content_child} ctx={@ctx} />
+          <.component component={@content_child} ctx={@ctx} />
         </div>
       </div>
     </div>
