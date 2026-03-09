@@ -159,7 +159,7 @@ defmodule A2UI.Demo.Agent do
       %Component{
         id: "root",
         type: "Column",
-        props: %{"children" => ["header", "booking-tabs"]}
+        props: %{"children" => ["header", "booking-tabs", "cancellation-modal"]}
       },
 
       # Header
@@ -346,6 +346,70 @@ defmodule A2UI.Demo.Agent do
         type: "Text",
         props: %{
           "text" => "Modern Nordic cuisine with a focus on locally sourced ingredients.",
+          "variant" => "caption"
+        }
+      },
+
+      # Cancellation policy modal
+      %Component{
+        id: "cancellation-modal",
+        type: "Modal",
+        props: %{
+          "entryPointChild" => "cancellation-trigger",
+          "contentChild" => "cancellation-content"
+        }
+      },
+      %Component{
+        id: "cancellation-trigger",
+        type: "Button",
+        props: %{
+          "child" => "cancellation-trigger-text",
+          "variant" => "borderless"
+        }
+      },
+      %Component{
+        id: "cancellation-trigger-text",
+        type: "Text",
+        props: %{"text" => "View Cancellation Policy", "variant" => "caption"}
+      },
+      %Component{
+        id: "cancellation-content",
+        type: "Column",
+        props: %{
+          "children" => [
+            "cancellation-title",
+            "cancellation-body",
+            "cancellation-divider",
+            "cancellation-note"
+          ]
+        }
+      },
+      %Component{
+        id: "cancellation-title",
+        type: "Text",
+        props: %{"text" => "Cancellation Policy", "variant" => "h3"}
+      },
+      %Component{
+        id: "cancellation-body",
+        type: "Text",
+        props: %{
+          "text" =>
+            "Reservations may be cancelled free of charge up to 24 hours before " <>
+              "the scheduled time. Cancellations made within 24 hours may incur a " <>
+              "fee of 200 SEK per guest. No-shows will be charged the full booking fee.",
+          "variant" => "body"
+        }
+      },
+      %Component{
+        id: "cancellation-divider",
+        type: "Divider",
+        props: %{"orientation" => "horizontal"}
+      },
+      %Component{
+        id: "cancellation-note",
+        type: "Text",
+        props: %{
+          "text" => "Click outside this dialog to close.",
           "variant" => "caption"
         }
       }

@@ -8,12 +8,6 @@ complete. See the codebase and README for current functionality.
 
 ## Components
 
-### Modal Interactivity
-Modal overlay renders hidden; no open/dismiss behavior. Add JS hook to toggle
-overlay visibility.
-- Files: `priv/static/a2ui-hooks.js`, `lib/a2ui/components/modal.ex`
-- Ref: [Modal component](https://a2ui.org/reference/components/#modal)
-
 ### Image `variant` Prop
 Only `fit` is implemented; `variant` (hero/thumbnail) is ignored. Add CSS
 classes and apply in Image component.

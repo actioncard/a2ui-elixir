@@ -129,6 +129,7 @@ defmodule A2UI.Components.ContainerTest do
       html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
 
       assert html =~ "a2ui-modal"
+      assert html =~ ~s(phx-hook="A2UIModal")
       assert html =~ "a2ui-modal__entry"
       assert html =~ "Open"
       assert html =~ "a2ui-modal__overlay"

@@ -3,7 +3,7 @@ defmodule A2UI.Components.Modal do
   Renders an A2UI Modal component.
 
   Has `entryPointChild` (always visible) and `contentChild` (overlay, hidden by default).
-  Toggle deferred to Phase 4 JS hook.
+  Uses `A2UIModal` JS hook to toggle overlay on entry click and dismiss on backdrop click.
   """
 
   use A2UI.ComponentRenderer
@@ -28,7 +28,7 @@ defmodule A2UI.Components.Modal do
       )
 
     ~H"""
-    <div class="a2ui-modal" id={@component_id} {@a11y}>
+    <div class="a2ui-modal" id={@component_id} phx-hook="A2UIModal" {@a11y}>
       <div :if={@entry_child} class="a2ui-modal__entry">
         <.component component={@entry_child} ctx={@ctx} />
       </div>

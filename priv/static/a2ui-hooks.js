@@ -23,5 +23,23 @@ window.A2UIHooks = {
         });
       });
     }
+  },
+
+  A2UIModal: {
+    mounted() {
+      const entry = this.el.querySelector(".a2ui-modal__entry");
+      const overlay = this.el.querySelector(".a2ui-modal__overlay");
+      if (!entry || !overlay) return;
+
+      entry.addEventListener("click", () => {
+        overlay.classList.remove("a2ui-modal__overlay--hidden");
+      });
+
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) {
+          overlay.classList.add("a2ui-modal__overlay--hidden");
+        }
+      });
+    }
   }
 };
