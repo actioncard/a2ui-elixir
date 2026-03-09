@@ -43,12 +43,14 @@ defmodule A2UI.Test.ComponentHelpers do
   """
   def make_surface(id, components, opts \\ []) do
     data = Keyword.get(opts, :data, %{})
+    theme = Keyword.get(opts, :theme, %{})
 
     %Surface{
       id: id,
       catalog_id: "basic",
       components: components,
-      data_model: DataModel.new(data)
+      data_model: DataModel.new(data),
+      theme: theme
     }
   end
 end

@@ -6,16 +6,6 @@ complete. See the codebase and README for current functionality.
 
 ---
 
-## Rendering
-
-### Theme CSS Variables
-`createSurface` theme is stored but not applied to rendering. Apply
-`--a2ui-primary` etc. as inline style on `.a2ui-surface` from `surface.theme`.
-- File: `lib/a2ui/components/renderer.ex`
-- Ref: [createSurface message](https://a2ui.org/reference/messages/#createsurface)
-
----
-
 ## Client-Side Functions
 
 The A2UI v0.9 spec defines named functions registered in the catalog.

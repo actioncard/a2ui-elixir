@@ -41,6 +41,25 @@ defmodule A2UI.Components.Renderer do
   Use `default_components/0` to inspect the built-in type → module map at
   runtime (e.g. to merge programmatically in a test).
 
+  ## Theme CSS variables
+
+  When a `createSurface` message includes a `theme` map, the renderer applies
+  matching values as CSS custom properties on the `.a2ui-surface` wrapper div.
+  This lets agent-provided theme colors cascade to all child components via
+  standard CSS inheritance.
+
+  Currently supported mappings:
+
+  | Theme key        | CSS custom property |
+  |------------------|---------------------|
+  | `primary_color`  | `--a2ui-primary`    |
+
+  The built-in CSS references `--a2ui-primary` for buttons, focus rings, and
+  other accent elements with a fallback default in `:root`. A per-surface
+  theme override takes precedence without affecting other surfaces on the page.
+
+  Properties with `nil` values are omitted from the inline style.
+
   ## Writing custom components
 
   See `A2UI.ComponentRenderer` for the behaviour, assigns contract, available
@@ -100,10 +119,15 @@ defmodule A2UI.Components.Renderer do
 
     case ComponentTree.root(ctx.components) do
       {:ok, root_component} ->
-        assigns = assign(assigns, component: root_component, ctx: ctx)
+        assigns =
+          assign(assigns,
+            component: root_component,
+            ctx: ctx,
+            theme_style: theme_style(assigns.surface.theme)
+          )
 
         ~H"""
-        <div class="a2ui-surface" data-surface-id={@ctx.surface_id}>
+        <div class="a2ui-surface" data-surface-id={@ctx.surface_id} style={@theme_style}>
           <.component component={@component} ctx={@ctx} />
         </div>
         """
@@ -360,6 +384,28 @@ defmodule A2UI.Components.Renderer do
     "end" => "a2ui-align-end",
     "stretch" => "a2ui-align-stretch"
   }
+
+  @theme_vars [
+    {:primary_color, "primary_color", "--a2ui-primary"}
+  ]
+
+  defp theme_style(theme) when is_map(theme) do
+    style =
+      @theme_vars
+      |> Enum.reduce([], fn {atom_key, string_key, var}, acc ->
+        value = Map.get(theme, atom_key) || Map.get(theme, string_key)
+
+        case value do
+          nil -> acc
+          v -> ["#{var}:#{v}" | acc]
+        end
+      end)
+      |> Enum.join(";")
+
+    if style == "", do: nil, else: style
+  end
+
+  defp theme_style(_), do: nil
 
   defp justify_class(nil), do: nil
   defp justify_class(v), do: Map.get(@justify_class_map, v)

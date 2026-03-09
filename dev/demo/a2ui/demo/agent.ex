@@ -72,7 +72,8 @@ defmodule A2UI.Demo.Agent do
       {:a2ui_message,
        %CreateSurface{
          surface_id: "main",
-         send_data_model: true
+         send_data_model: true,
+         theme: %{primary_color: "#e65100"}
        }}
     )
 

@@ -23,6 +23,20 @@ defmodule A2UI.Components.RendererTest do
       assert html =~ "Hello"
     end
 
+    test "applies theme CSS variables as inline style" do
+      components = %{
+        "root" => make_component("root", "Text", %{"text" => "Themed"})
+      }
+
+      surface = make_surface("s1", components, theme: %{primary_color: "#ff0000"})
+      assigns = %{surface: surface}
+
+      html = rendered_to_string(~H"<Renderer.surface surface={@surface} />")
+
+      assert html =~ ~s(style="--a2ui-primary:#ff0000")
+      assert html =~ "Themed"
+    end
+
     test "renders empty div when no root" do
       surface = make_surface("s1", %{})
       assigns = %{surface: surface}
