@@ -5,10 +5,12 @@ defmodule A2UI.DataModel.Binding do
   Values can be:
   - **Literals** — returned as-is
   - **Path bindings** (`%{"path" => "/some/path"}`) — resolved from the data model
-  - **Function calls** (`%{"call" => "openUrl", ...}`) — returned as-is (descriptors for renderer)
+  - **Function calls** (`%{"call" => "formatNumber", ...}`) — known functions evaluated server-side,
+    unknown ones (e.g., `openUrl`, validators) returned as-is
   """
 
   alias A2UI.DataModel
+  alias A2UI.DataModel.Functions
 
   @doc """
   Resolves a value against the data model.
@@ -31,7 +33,14 @@ defmodule A2UI.DataModel.Binding do
   @spec resolve(any(), DataModel.t(), String.t() | nil) :: {:ok, any()} | :error
   def resolve(value, data_model, scope_path \\ nil)
 
-  # Function call descriptor — pass through for renderer
+  # Function call descriptor — evaluate known functions, pass through unknown
+  def resolve(%{"call" => name, "args" => args} = value, data_model, scope_path) do
+    case Functions.evaluate(name, args, data_model, scope_path) do
+      {:ok, result} -> {:ok, result}
+      :pass_through -> {:ok, value}
+    end
+  end
+
   def resolve(%{"call" => _} = value, _data_model, _scope_path) do
     {:ok, value}
   end

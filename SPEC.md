@@ -8,23 +8,6 @@ complete. See the codebase and README for current functionality.
 
 ## Client-Side Functions
 
-The A2UI v0.9 spec defines named functions registered in the catalog.
-Currently all function call descriptors (`%{"call" => ...}`) are passed
-through unresolved.
-
-### Formatting Functions
-`formatString`, `formatNumber`, `formatCurrency`, `formatDate`, `pluralize`
-passed through as raw descriptors. Resolve server-side in `Binding.resolve/3`
-or JS-based.
-- File: `lib/a2ui/data_model/binding.ex`
-- Ref: [Client-side functions](https://a2ui.org/specification/v0.9-a2ui/)
-
-### Boolean Logic Functions
-`and`, `or`, `not` passed through as descriptors. Evaluate in
-`Binding.resolve/3`.
-- File: `lib/a2ui/data_model/binding.ex`
-- Ref: [Client-side functions](https://a2ui.org/specification/v0.9-a2ui/)
-
 ### Local Actions (`openUrl`)
 Button renders `data-a2ui-action` for `functionCall` but no JS handles it.
 Add JS to parse and dispatch `openUrl` (and future local actions).

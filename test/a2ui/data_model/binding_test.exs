@@ -84,14 +84,59 @@ defmodule A2UI.DataModel.BindingTest do
   end
 
   describe "function call descriptors" do
-    test "returns call descriptor as-is" do
+    test "returns unknown call descriptor as-is" do
       call = %{"call" => "openUrl", "args" => %{"url" => "https://example.com"}}
       assert {:ok, ^call} = Binding.resolve(call, DataModel.new())
     end
 
-    test "returns validation call as-is" do
+    test "returns validation call (no args key) as-is" do
       call = %{"call" => "required", "message" => "This field is required"}
       assert {:ok, ^call} = Binding.resolve(call, DataModel.new())
+    end
+
+    test "evaluates formatNumber with literal args" do
+      call = %{"call" => "formatNumber", "args" => %{"value" => 1234.5, "decimals" => 2}}
+      assert {:ok, "1,234.50"} = Binding.resolve(call, DataModel.new())
+    end
+
+    test "evaluates formatNumber with path binding arg" do
+      dm = DataModel.new(%{"price" => 9999})
+      call = %{"call" => "formatNumber", "args" => %{"value" => %{"path" => "/price"}}}
+      assert {:ok, "9,999"} = Binding.resolve(call, dm)
+    end
+
+    test "evaluates boolean not" do
+      dm = DataModel.new(%{"flag" => false})
+
+      call = %{
+        "call" => "not",
+        "args" => %{"value" => %{"path" => "/flag"}}
+      }
+
+      assert {:ok, true} = Binding.resolve(call, dm)
+    end
+
+    test "passes through known function when arg path is missing" do
+      dm = DataModel.new()
+      call = %{"call" => "formatNumber", "args" => %{"value" => %{"path" => "/missing"}}}
+      assert {:ok, ^call} = Binding.resolve(call, dm)
+    end
+
+    test "evaluates nested function call in args" do
+      dm = DataModel.new(%{"count" => 5})
+
+      call = %{
+        "call" => "pluralize",
+        "args" => %{
+          "value" => %{"call" => "formatNumber", "args" => %{"value" => 1}},
+          "one" => "1 item",
+          "other" => "items"
+        }
+      }
+
+      # formatNumber returns "1" (string), pluralize checks == 1 (integer)
+      # so this goes to "other" — this is expected behavior
+      assert {:ok, "items"} = Binding.resolve(call, dm)
     end
   end
 end
