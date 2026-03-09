@@ -23,11 +23,30 @@
 
 ## Testing
 
+### Running Tests
+
+- **Elixir tests:** `mix test`
+- **JS tests:** `mix bun test` (Bun is installed via the `bun` Hex package — do NOT call `bun` directly)
+- **All tests:** `mix test.all` (runs both Elixir and JS)
+- **CI tests:** `mix test.ci` (Elixir with `--warnings-as-errors` + JS)
+
+### Elixir Test Conventions
+
 - Test file structure mirrors `lib/` structure
 - All test modules use `async: true` unless they need shared state
 - Shared test builders in `test/support/component_helpers.ex`
 - Phoenix component tests use `rendered_to_string/1` + Floki assertions
-- `mix test` must pass before committing
+
+### JS Test Conventions
+
+- Test files live in `test/js/` and use Bun's built-in test runner (`bun:test`)
+- DOM mocks in `test/js/support/dom.js` — use `mockElement`, `mockEvent`, `addChild`
+- Hook tests in `test/js/hooks.test.js`, validator tests in `test/js/validators.test.js`
+- JS source: `priv/static/a2ui-hooks.js` — exports via CommonJS for test imports
+
+### Pre-commit
+
+- `mix test` and `mix bun test` must both pass before committing
 
 ## Version Control
 

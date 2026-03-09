@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from "bun:test";
 import { mockElement, addChild, mockEvent } from "./support/dom.js";
-const { A2UIHooks } = require("../../priv/static/a2ui-hooks.js");
+const { A2UIHooks, A2UI_LOCAL_ACTIONS, dispatchLocalAction } = require("../../priv/static/a2ui-hooks.js");
 
 // Helper: create a fresh hook instance bound to an element, then call mounted()
 function mountHook(hookName, el) {
@@ -320,5 +320,63 @@ describe("A2UISubmit", () => {
     button.dispatchEvent(event);
 
     expect(event._defaultPrevented).toBe(false);
+  });
+});
+
+// ─── Local Actions ──────────────────────────────────────────────────────────
+
+describe("dispatchLocalAction", () => {
+  test("openUrl calls window.open with correct args", () => {
+    const originalOpen = globalThis.window?.open;
+    let openArgs;
+    globalThis.window = globalThis.window || {};
+    globalThis.window.open = (...args) => { openArgs = args; };
+
+    const el = mockElement("button", {
+      dataset: { a2uiAction: JSON.stringify({ call: "openUrl", args: { url: "https://example.com" } }) },
+    });
+    const event = mockEvent("click");
+
+    const result = dispatchLocalAction(event, el);
+
+    expect(result).toBe(true);
+    expect(openArgs).toEqual(["https://example.com", "_blank", "noopener"]);
+
+    // Restore
+    if (originalOpen) globalThis.window.open = originalOpen;
+  });
+
+  test("unknown action logs warning and returns false", () => {
+    const warnings = [];
+    const originalWarn = console.warn;
+    console.warn = (...args) => { warnings.push(args); };
+
+    const el = mockElement("button", {
+      dataset: { a2uiAction: JSON.stringify({ call: "unknownAction", args: {} }) },
+    });
+    const event = mockEvent("click");
+
+    const result = dispatchLocalAction(event, el);
+
+    expect(result).toBe(false);
+    expect(warnings.length).toBe(1);
+    expect(warnings[0]).toEqual(["A2UI: unknown local action:", "unknownAction"]);
+
+    console.warn = originalWarn;
+  });
+
+  test("invalid JSON returns false silently", () => {
+    const el = mockElement("button", {
+      dataset: { a2uiAction: "not-valid-json{" },
+    });
+    const event = mockEvent("click");
+
+    const result = dispatchLocalAction(event, el);
+
+    expect(result).toBe(false);
+  });
+
+  test("A2UI_LOCAL_ACTIONS contains openUrl", () => {
+    expect(typeof A2UI_LOCAL_ACTIONS.openUrl).toBe("function");
   });
 });

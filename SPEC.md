@@ -6,16 +6,6 @@ complete. See the codebase and README for current functionality.
 
 ---
 
-## Client-Side Functions
-
-### Local Actions (`openUrl`)
-Button renders `data-a2ui-action` for `functionCall` but no JS handles it.
-Add JS to parse and dispatch `openUrl` (and future local actions).
-- File: `priv/static/a2ui-hooks.js`
-- Ref: [Button action](https://a2ui.org/reference/components/#button)
-
----
-
 ## Out of Scope
 
 These are not planned for this library:

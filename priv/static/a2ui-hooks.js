@@ -173,8 +173,45 @@ const A2UI_VALIDATORS = {
   }
 };
 
+// Local action dispatch map
+const A2UI_LOCAL_ACTIONS = {
+  openUrl(_event, args) { window.open(args.url, "_blank", "noopener"); }
+};
+
+/**
+ * Dispatch a local action from an element's data-a2ui-action attribute.
+ * Returns true if an action was dispatched, false otherwise.
+ */
+function dispatchLocalAction(event, el) {
+  let action;
+  try { action = JSON.parse(el.dataset.a2uiAction); } catch (_) { return false; }
+
+  const fn = A2UI_LOCAL_ACTIONS[action.call];
+  if (fn) {
+    fn(event, action.args || {});
+    return true;
+  }
+
+  console.warn("A2UI: unknown local action:", action.call);
+  return false;
+}
+
 // Browser: attach to window for LiveView hook registration
-if (typeof window !== "undefined") window.A2UIHooks = A2UIHooks;
+if (typeof window !== "undefined") {
+  window.A2UIHooks = A2UIHooks;
+  window.A2UI_LOCAL_ACTIONS = A2UI_LOCAL_ACTIONS;
+
+  // Delegated click handler for local actions
+  document.addEventListener("click", (e) => {
+    const target = e.target.closest("[data-a2ui-action]");
+    if (!target) return;
+    dispatchLocalAction(e, target);
+  });
+}
 
 // Test: CommonJS export for Bun
-if (typeof module !== "undefined") module.exports = { A2UIHooks, A2UI_VALIDATORS };
+if (typeof module !== "undefined") {
+  module.exports = {
+    A2UIHooks, A2UI_VALIDATORS, A2UI_LOCAL_ACTIONS, dispatchLocalAction
+  };
+}
