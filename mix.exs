@@ -63,9 +63,10 @@ defmodule A2UI.MixProject do
       maintainers: ["Action Card AB"],
       licenses: ["Apache-2.0"],
       files:
-        ~w(lib .formatter.exs mix.exs README.md LICENSE CHANGELOG.md CONTRIBUTING.md SPEC.md),
+        ~w(lib priv/static .formatter.exs mix.exs README.md LICENSE CHANGELOG.md CONTRIBUTING.md SPEC.md),
       links: %{
-        "GitHub" => @source_url
+        "GitHub" => @source_url,
+        "A2UI Spec" => "https://a2ui.org/specification/v0.9-a2ui/"
       }
     ]
   end
@@ -73,7 +74,15 @@ defmodule A2UI.MixProject do
   defp docs do
     [
       main: "A2UI",
-      extras: ["README.md", "CHANGELOG.md", "CONTRIBUTING.md", "SPEC.md", "LICENSE"]
+      extras: ["README.md", "CHANGELOG.md", "CONTRIBUTING.md", "SPEC.md", "LICENSE"],
+      groups_for_modules: [
+        Core: [~r/^A2UI$/],
+        Protocol: [~r/A2UI\.Protocol/],
+        Components: [~r/A2UI\.Components/],
+        "Data Model": [~r/A2UI\.DataModel/],
+        LiveView: [~r/A2UI\.Live/],
+        Transport: [~r/A2UI\.Transport/]
+      ]
     ]
   end
 end

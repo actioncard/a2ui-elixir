@@ -18,7 +18,7 @@ Agents send A2UI v0.9 JSONL messages describing components, and this library ren
 ## Features
 
 - **Protocol parsing** — JSONL stream parser for A2UI v0.9 messages (CreateSurface, UpdateComponents, UpdateDataModel, DeleteSurface, Action)
-- **16 component types** — Text, Button, TextField, CheckBox, ChoicePicker, Slider, DateTimeInput, Image, Icon, Divider, Row, Column, List, Card, Tabs, Modal
+- **18 component types** — Text, Button, TextField, CheckBox, ChoicePicker, Slider, DateTimeInput, Image, Icon, Divider, Video, AudioPlayer, Row, Column, List, Card, Tabs, Modal
 - **Data binding** — two-way binding with JSON Pointer paths, resolved at render time
 - **LiveView macro** — `use A2UI.Live` injects mount hook, message handling, and event dispatch
 - **Transport abstraction** — `A2UI.Transport` behaviour with built-in local (process message) transport
@@ -105,7 +105,7 @@ A2UI maps naturally to Phoenix LiveView:
 | Category | Components |
 |---|---|
 | **Layout** | Row, Column, List |
-| **Display** | Text, Image, Icon, Divider |
+| **Display** | Text, Image, Icon, Divider, Video, AudioPlayer |
 | **Input** | TextField, CheckBox, ChoicePicker, Slider, DateTimeInput |
 | **Container** | Card, Tabs, Modal |
 | **Interactive** | Button |
@@ -162,6 +162,31 @@ end
 
 Requires `phoenix_live_view ~> 1.0` and `phoenix_html ~> 4.0` (pulled in as transitive dependencies).
 
+### Static Assets
+
+Copy the JS hooks and CSS to your Phoenix static directory:
+
+```bash
+cp deps/a2ui/priv/static/a2ui-hooks.js assets/vendor/
+cp deps/a2ui/priv/static/a2ui.css assets/vendor/
+```
+
+Then import the hooks in your `app.js`:
+
+```js
+import { A2UIHooks } from "../vendor/a2ui-hooks.js"
+
+let liveSocket = new LiveSocket("/live", Socket, {
+  hooks: { ...A2UIHooks }
+})
+```
+
+And import the CSS in your `app.css`:
+
+```css
+@import "../vendor/a2ui.css";
+```
+
 ## Development
 
 ```bash
@@ -172,14 +197,19 @@ mix compile --warnings-as-errors
 
 Requires Elixir ~> 1.17.
 
+## How This Differs
+
+a2ui-elixir is a **server-side renderer** — the only one in the A2UI ecosystem as of March 2026. All other implementations (Lit, Angular, React, Flutter) parse A2UI JSON on the client and map to native widgets. This library renders on the server, producing HTML that LiveView ships over WebSocket.
+
+- **v0.9 spec, 18/18 basic catalog components** — full coverage of the current spec
+- **Server-side binding + function evaluation** — `formatString`, `formatNumber`, `formatCurrency`, `formatDate`, `pluralize`, and boolean logic resolved on the server; validation functions (`required`, `regex`, `email`, etc.) run client-side via JS hooks
+- **No client-side A2UI runtime** — the browser receives plain HTML and minimal JS hooks
+
 ## Not Yet Implemented
 
+- **`error` message (client→server)** — v0.9 `ValidationFailed` error feedback to the agent
+- **`catalogId` validation** — verifying components against a remote catalog JSON schema
 - **Remote transports** — SSE/HTTP, A2A protocol integration (via [a2a-elixir](https://github.com/actioncard/a2a-elixir))
-- **Catalog validation** — verifying components against catalog schema
-- **Theming** — `primaryColor`, `iconUrl`, `agentDisplayName` from CreateSurface
-- **JS interactivity** — client-side tab switching and modal open/close
-- **Video / AudioPlayer** — not yet rendered
-- **Client-side functions** — validation (`required`, `email`, etc.) and formatting (`formatDate`, etc.)
 
 ## Links
 

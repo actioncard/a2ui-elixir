@@ -20,4 +20,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Phoenix function components for all A2UI component types
 - LiveView integration with two-way data binding and action dispatch
 - Transport behaviour with local process-messaging implementation
+- Video and AudioPlayer components
+- Client-side validation via JS hooks (required, regex, length, numeric, email)
+- Client-side formatting functions (formatString, formatNumber, formatCurrency, formatDate, pluralize)
+- Server-side function evaluation (formatString, formatNumber, formatCurrency, formatDate, pluralize, boolean logic)
+- JS interactivity hooks (A2UITabs, A2UIModal, A2UISubmit, A2UIValidation)
+- Theming support via CSS variables (primaryColor, iconUrl, agentDisplayName)
+- Local action support (openUrl, client-side function calls on Button)
 - Demo application with `mix a2ui.demo`
+
+### Fixed
+
+- README: corrected component count (16 → 18), removed completed items from "Not Yet Implemented"
+- SPEC.md: added Known Gaps section documenting unimplemented spec features
