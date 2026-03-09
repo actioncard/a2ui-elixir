@@ -78,7 +78,7 @@ defmodule A2UI.Components.InputTest do
       assert html =~ "Bio"
     end
 
-    test "renders checks as data attribute" do
+    test "renders validation hook when checks present" do
       checks = [
         %{"call" => "required", "message" => "Required"},
         %{"call" => "email", "message" => "Invalid email"}
@@ -94,9 +94,57 @@ defmodule A2UI.Components.InputTest do
       assigns = %{component: component, ctx: ctx}
 
       html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
+      {:ok, doc} = Floki.parse_document(html)
 
-      assert html =~ "data-a2ui-checks"
-      assert html =~ "required"
+      # Hook and checks on container div, not the input
+      [container] = Floki.find(doc, ".a2ui-text-field")
+      {_, attrs, _} = container
+      assert Enum.any?(attrs, fn {k, _} -> k == "phx-hook" end)
+      assert Enum.any?(attrs, fn {k, v} -> k == "phx-hook" and v == "A2UIValidation" end)
+      assert Enum.any?(attrs, fn {k, _} -> k == "data-a2ui-checks" end)
+      assert Enum.any?(attrs, fn {k, _} -> k == "id" end)
+
+      # Input does NOT have data-a2ui-checks
+      [input] = Floki.find(doc, "input")
+      {_, input_attrs, _} = input
+      refute Enum.any?(input_attrs, fn {k, _} -> k == "data-a2ui-checks" end)
+
+      # Error span present
+      [error_span] = Floki.find(doc, ".a2ui-text-field__error")
+      assert error_span
+    end
+
+    test "no hook or error span when checks absent" do
+      component = make_component("tf", "TextField", %{"value" => "test"})
+      ctx = make_ctx(%{"tf" => component})
+      assigns = %{component: component, ctx: ctx}
+
+      html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
+
+      refute html =~ "phx-hook"
+      refute html =~ "a2ui-text-field__error"
+    end
+
+    test "textarea renders validation hook when checks present" do
+      checks = [%{"call" => "required", "message" => "Required"}]
+
+      component =
+        make_component("tf", "TextField", %{
+          "textFieldType" => "longText",
+          "value" => "hi",
+          "checks" => checks
+        })
+
+      ctx = make_ctx(%{"tf" => component})
+      assigns = %{component: component, ctx: ctx}
+
+      html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
+      {:ok, doc} = Floki.parse_document(html)
+
+      [container] = Floki.find(doc, ".a2ui-text-field")
+      {_, attrs, _} = container
+      assert Enum.any?(attrs, fn {k, v} -> k == "phx-hook" and v == "A2UIValidation" end)
+      assert Floki.find(doc, ".a2ui-text-field__error") != []
     end
 
     test "renders without phx attrs when value is literal" do

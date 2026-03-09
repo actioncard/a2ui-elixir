@@ -12,13 +12,6 @@ The A2UI v0.9 spec defines named functions registered in the catalog.
 Currently all function call descriptors (`%{"call" => ...}`) are passed
 through unresolved.
 
-### Input Validation (`checks`)
-TextField stores checks as `data-a2ui-checks`, no client-side validation runs.
-Implement: `required`, `regex`, `length`, `numeric`, `email`.
-- Files: `priv/static/a2ui-hooks.js`, `lib/a2ui/components/text_field.ex`
-- Ref: [TextField checks](https://a2ui.org/reference/components/#textfield),
-  [Client-side functions](https://a2ui.org/specification/v0.9-a2ui/)
-
 ### Formatting Functions
 `formatString`, `formatNumber`, `formatCurrency`, `formatDate`, `pluralize`
 passed through as raw descriptors. Resolve server-side in `Binding.resolve/3`

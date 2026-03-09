@@ -100,6 +100,18 @@
   border-color: var(--a2ui-border-focus);
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
+.a2ui-text-field--invalid .a2ui-text-field__input {
+  border-color: var(--a2ui-error, #dc2626);
+}
+.a2ui-text-field--invalid .a2ui-text-field__input:focus {
+  border-color: var(--a2ui-error, #dc2626);
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}
+.a2ui-text-field__error {
+  font-size: 0.8rem;
+  color: var(--a2ui-error, #dc2626);
+  margin-top: -0.1rem;
+}
 
 /* DateTimeInput */
 .a2ui-datetime-input { display: flex; flex-direction: column; gap: 0.3rem; }

@@ -41,5 +41,134 @@ window.A2UIHooks = {
         }
       });
     }
+  },
+
+  A2UISubmit: {
+    mounted() {
+      this.el.addEventListener("click", (e) => {
+        const surface = this.el.closest(".a2ui-surface");
+        if (!surface) return;
+
+        const validators = surface.querySelectorAll("[phx-hook='A2UIValidation']");
+        if (validators.length === 0) return;
+
+        // Force validation on every field (even untouched ones)
+        let hasErrors = false;
+        validators.forEach((el) => {
+          const v = el._a2uiValidation;
+          if (!v) return;
+          v.blurred = true;
+          v.validate();
+          if (el.classList.contains("a2ui-text-field--invalid")) {
+            hasErrors = true;
+          }
+        });
+
+        if (hasErrors) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, true); // capture phase — runs before LiveView's handler
+    }
+  },
+
+  A2UIValidation: {
+    mounted() {
+      this._input = this.el.querySelector("input, textarea");
+      this._error = this.el.querySelector(".a2ui-text-field__error");
+      this._checks = this._parseChecks();
+      this._blurred = false;
+
+      // Expose validation API for A2UISubmit hook
+      this.el._a2uiValidation = {
+        blurred: false,
+        validate: () => {
+          this._blurred = this.el._a2uiValidation.blurred;
+          this._validate();
+        }
+      };
+
+      if (this._input) {
+        this._input.addEventListener("blur", () => {
+          this._blurred = true;
+          this.el._a2uiValidation.blurred = true;
+          this._validate();
+        });
+      }
+    },
+
+    updated() {
+      this._checks = this._parseChecks();
+      if (this._blurred) this._validate();
+    },
+
+    _parseChecks() {
+      const raw = this.el.dataset.a2uiChecks;
+      if (!raw) return [];
+      try { return JSON.parse(raw); } catch (_) { return []; }
+    },
+
+    _validate() {
+      const value = this._input ? this._input.value : "";
+
+      for (const check of this._checks) {
+        const fn = A2UI_VALIDATORS[check.call];
+        if (!fn) continue;
+        if (!fn(value, check.args || {})) {
+          this._showError(check.message || "Invalid");
+          return;
+        }
+      }
+
+      this._clearError();
+    },
+
+    _showError(msg) {
+      this.el.classList.add("a2ui-text-field--invalid");
+      if (this._error) {
+        this._error.textContent = msg;
+        this._error.style.display = "";
+      }
+    },
+
+    _clearError() {
+      this.el.classList.remove("a2ui-text-field--invalid");
+      if (this._error) {
+        this._error.textContent = "";
+        this._error.style.display = "none";
+      }
+    }
+  }
+};
+
+const A2UI_VALIDATORS = {
+  required(value, _args) {
+    return value.trim() !== "";
+  },
+
+  regex(value, args) {
+    if (value === "") return true;
+    try { return new RegExp(args.pattern).test(value); } catch (_) { return true; }
+  },
+
+  length(value, args) {
+    if (value === "") return true;
+    if (args.min != null && value.length < args.min) return false;
+    if (args.max != null && value.length > args.max) return false;
+    return true;
+  },
+
+  numeric(value, args) {
+    if (value === "") return true;
+    const n = parseFloat(value);
+    if (isNaN(n)) return false;
+    if (args.min != null && n < args.min) return false;
+    if (args.max != null && n > args.max) return false;
+    return true;
+  },
+
+  email(value, _args) {
+    if (value === "") return true;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   }
 };

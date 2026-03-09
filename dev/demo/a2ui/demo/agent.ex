@@ -86,6 +86,7 @@ defmodule A2UI.Demo.Agent do
          value: %{
            "reservation" => %{
              "name" => "",
+             "email" => "",
              "date" => "",
              "guests" => 2,
              "dietary" => []
@@ -111,6 +112,7 @@ defmodule A2UI.Demo.Agent do
 
   defp send_confirmation(pid, context) do
     name = Map.get(context, "name", "Guest")
+    email = Map.get(context, "email", "Not provided")
     date = Map.get(context, "date", "Not specified")
     guests = Map.get(context, "guests", 2)
     dietary = Map.get(context, "dietary", [])
@@ -127,7 +129,7 @@ defmodule A2UI.Demo.Agent do
       {:a2ui_message,
        %UpdateComponents{
          surface_id: "main",
-         components: confirmation_components(name, date, guests, dietary_text)
+         components: confirmation_components(name, email, date, guests, dietary_text)
        }}
     )
   end
@@ -142,6 +144,7 @@ defmodule A2UI.Demo.Agent do
          value: %{
            "reservation" => %{
              "name" => "",
+             "email" => "",
              "date" => "",
              "guests" => 2,
              "dietary" => []
@@ -192,6 +195,7 @@ defmodule A2UI.Demo.Agent do
         props: %{
           "children" => [
             "name-field",
+            "email-field",
             "date-field",
             "guests-section",
             "dietary-section",
@@ -201,13 +205,51 @@ defmodule A2UI.Demo.Agent do
         }
       },
 
-      # Name
+      # Name (required, 2–50 chars)
       %Component{
         id: "name-field",
         type: "TextField",
         props: %{
           "label" => "Your Name",
-          "value" => %{"path" => "/reservation/name"}
+          "value" => %{"path" => "/reservation/name"},
+          "checks" => [
+            %{
+              "call" => "required",
+              "args" => %{"value" => %{"path" => "/reservation/name"}},
+              "message" => "Name is required"
+            },
+            %{
+              "call" => "length",
+              "args" => %{
+                "value" => %{"path" => "/reservation/name"},
+                "min" => 2,
+                "max" => 50
+              },
+              "message" => "Name must be 2–50 characters"
+            }
+          ]
+        }
+      },
+
+      # Email (required, valid email)
+      %Component{
+        id: "email-field",
+        type: "TextField",
+        props: %{
+          "label" => "Email",
+          "value" => %{"path" => "/reservation/email"},
+          "checks" => [
+            %{
+              "call" => "required",
+              "args" => %{"value" => %{"path" => "/reservation/email"}},
+              "message" => "Email is required"
+            },
+            %{
+              "call" => "email",
+              "args" => %{"value" => %{"path" => "/reservation/email"}},
+              "message" => "Please enter a valid email address"
+            }
+          ]
         }
       },
 
@@ -304,6 +346,7 @@ defmodule A2UI.Demo.Agent do
               "name" => "submit_booking",
               "context" => %{
                 "name" => %{"path" => "/reservation/name"},
+                "email" => %{"path" => "/reservation/email"},
                 "date" => %{"path" => "/reservation/date"},
                 "guests" => %{"path" => "/reservation/guests"},
                 "dietary" => %{"path" => "/reservation/dietary"}
@@ -417,7 +460,7 @@ defmodule A2UI.Demo.Agent do
     ]
   end
 
-  defp confirmation_components(name, date, guests, dietary_text) do
+  defp confirmation_components(name, email, date, guests, dietary_text) do
     [
       # Root
       %Component{
@@ -457,6 +500,7 @@ defmodule A2UI.Demo.Agent do
         props: %{
           "children" => [
             "detail-name",
+            "detail-email",
             "detail-date",
             "detail-guests",
             "detail-dietary",
@@ -469,6 +513,11 @@ defmodule A2UI.Demo.Agent do
         id: "detail-name",
         type: "Text",
         props: %{"text" => "Name: #{name}", "variant" => "body"}
+      },
+      %Component{
+        id: "detail-email",
+        type: "Text",
+        props: %{"text" => "Email: #{email}", "variant" => "body"}
       },
       %Component{
         id: "detail-date",

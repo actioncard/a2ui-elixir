@@ -22,33 +22,34 @@ defmodule A2UI.Components.ChoicePicker do
     a11y = a11y_attrs(assigns.component.accessibility)
     surface_id = assigns.ctx.surface_id
     input_type = if single, do: "radio", else: "checkbox"
-    input_attrs = input_attrs(path, surface_id, input_type)
+    form_attrs = input_attrs(path, surface_id, input_type)
 
     assigns =
       assign(assigns,
         options: options,
         selections: selections,
         a11y: a11y,
-        input_attrs: input_attrs,
+        form_attrs: form_attrs,
         input_type: input_type,
         component_id: assigns.component.id
       )
 
     ~H"""
-    <fieldset class="a2ui-choice-picker" {@a11y}>
-      <div :for={option <- @options} class="a2ui-choice-picker__option">
-        <label>
-          <input
-            type={@input_type}
-            name={@component_id}
-            value={option["value"]}
-            checked={option["value"] in @selections}
-            {@input_attrs}
-          />
-          <span>{option["label"]}</span>
-        </label>
-      </div>
-    </fieldset>
+    <form class="a2ui-choice-picker" {@form_attrs}>
+      <fieldset {@a11y}>
+        <div :for={option <- @options} class="a2ui-choice-picker__option">
+          <label>
+            <input
+              type={@input_type}
+              name={@component_id}
+              value={option["value"]}
+              checked={option["value"] in @selections}
+            />
+            <span>{option["label"]}</span>
+          </label>
+        </div>
+      </fieldset>
+    </form>
     """
   end
 end

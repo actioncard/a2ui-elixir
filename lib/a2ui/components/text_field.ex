@@ -24,11 +24,22 @@ defmodule A2UI.Components.TextField do
     field_type = Map.get(props, "textFieldType", "shortText")
     path = binding_path(Map.get(props, "value"))
     checks = Map.get(props, "checks")
+    has_checks = is_list(checks) and checks != []
     a11y = a11y_attrs(assigns.component.accessibility)
     surface_id = assigns.ctx.surface_id
 
-    input_attrs = input_attrs(path, surface_id)
-    check_attrs = if checks, do: %{"data-a2ui-checks" => Jason.encode!(checks)}, else: %{}
+    form_attrs = input_attrs(path, surface_id)
+
+    hook_attrs =
+      if has_checks do
+        %{
+          "id" => "#{assigns.component.id}-field",
+          "phx-hook" => "A2UIValidation",
+          "data-a2ui-checks" => Jason.encode!(checks)
+        }
+      else
+        %{}
+      end
 
     assigns =
       assign(assigns,
@@ -36,30 +47,34 @@ defmodule A2UI.Components.TextField do
         value: value,
         field_type: field_type,
         a11y: a11y,
-        input_attrs: input_attrs,
-        check_attrs: check_attrs,
+        form_attrs: form_attrs,
+        hook_attrs: hook_attrs,
+        has_checks: has_checks,
         component_id: assigns.component.id
       )
 
     if field_type == "longText" do
       ~H"""
-      <div class="a2ui-text-field" {@a11y}>
+      <form class="a2ui-text-field" {@form_attrs} {@hook_attrs} {@a11y}>
         <label :if={@label} for={@component_id}>{@label}</label>
         <textarea
           id={@component_id}
           name={@component_id}
           class="a2ui-text-field__input"
-          {@input_attrs}
-          {@check_attrs}
         >{@value}</textarea>
-      </div>
+        <span
+          :if={@has_checks}
+          class="a2ui-text-field__error"
+          style="display:none"
+        ></span>
+      </form>
       """
     else
       html_type = Map.get(@type_map, field_type, "text")
       assigns = assign(assigns, html_type: html_type)
 
       ~H"""
-      <div class="a2ui-text-field" {@a11y}>
+      <form class="a2ui-text-field" {@form_attrs} {@hook_attrs} {@a11y}>
         <label :if={@label} for={@component_id}>{@label}</label>
         <input
           type={@html_type}
@@ -67,10 +82,13 @@ defmodule A2UI.Components.TextField do
           name={@component_id}
           value={@value}
           class="a2ui-text-field__input"
-          {@input_attrs}
-          {@check_attrs}
         />
-      </div>
+        <span
+          :if={@has_checks}
+          class="a2ui-text-field__error"
+          style="display:none"
+        ></span>
+      </form>
       """
     end
   end

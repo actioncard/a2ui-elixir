@@ -24,7 +24,7 @@ defmodule A2UI.Components.DateTimeInput do
     path = binding_path(Map.get(props, "value"))
     a11y = a11y_attrs(assigns.component.accessibility)
     surface_id = assigns.ctx.surface_id
-    input_attrs = input_attrs(path, surface_id)
+    form_attrs = input_attrs(path, surface_id)
 
     assigns =
       assign(assigns,
@@ -32,12 +32,12 @@ defmodule A2UI.Components.DateTimeInput do
         value: value,
         html_type: html_type,
         a11y: a11y,
-        input_attrs: input_attrs,
+        form_attrs: form_attrs,
         component_id: assigns.component.id
       )
 
     ~H"""
-    <div class="a2ui-datetime-input" {@a11y}>
+    <form class="a2ui-datetime-input" {@form_attrs} {@a11y}>
       <label :if={@label} for={@component_id}>{@label}</label>
       <input
         type={@html_type}
@@ -45,9 +45,8 @@ defmodule A2UI.Components.DateTimeInput do
         name={@component_id}
         value={@value}
         class="a2ui-datetime-input__input"
-        {@input_attrs}
       />
-    </div>
+    </form>
     """
   end
 

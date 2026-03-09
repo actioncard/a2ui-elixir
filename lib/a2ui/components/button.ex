@@ -18,17 +18,31 @@ defmodule A2UI.Components.Button do
     a11y = a11y_attrs(assigns.component.accessibility)
     class = "a2ui-button a2ui-button--#{variant}"
     action_attrs = action_attrs(action, assigns.component.id, assigns.ctx.surface_id)
+    hook_attrs = submit_hook_attrs(action, assigns.component.id)
 
     child = resolve_child(props, "child", assigns.ctx)
 
-    assigns = assign(assigns, class: class, a11y: a11y, action_attrs: action_attrs, child: child)
+    assigns =
+      assign(assigns,
+        class: class,
+        a11y: a11y,
+        action_attrs: action_attrs,
+        hook_attrs: hook_attrs,
+        child: child
+      )
 
     ~H"""
-    <button class={@class} {@action_attrs} {@a11y}>
+    <button class={@class} {@action_attrs} {@hook_attrs} {@a11y}>
       <.component :if={@child} component={@child} ctx={@ctx} />
     </button>
     """
   end
+
+  defp submit_hook_attrs(%{"event" => _}, component_id) do
+    %{"id" => "#{component_id}-submit", "phx-hook" => "A2UISubmit"}
+  end
+
+  defp submit_hook_attrs(_, _), do: %{}
 
   defp action_attrs(nil, _component_id, _surface_id), do: %{}
 

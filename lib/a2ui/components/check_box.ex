@@ -16,32 +16,31 @@ defmodule A2UI.Components.CheckBox do
     path = binding_path(Map.get(props, "value"))
     a11y = a11y_attrs(assigns.component.accessibility)
     surface_id = assigns.ctx.surface_id
-    input_attrs = input_attrs(path, surface_id)
+    form_attrs = input_attrs(path, surface_id)
 
     assigns =
       assign(assigns,
         label: label,
         checked: checked,
         a11y: a11y,
-        input_attrs: input_attrs,
+        form_attrs: form_attrs,
         component_id: assigns.component.id
       )
 
     ~H"""
-    <div class="a2ui-checkbox" {@a11y}>
+    <form class="a2ui-checkbox" {@form_attrs} {@a11y}>
       <label>
-        <input type="hidden" name={@component_id} value="false" {@input_attrs} />
+        <input type="hidden" name={@component_id} value="false" />
         <input
           type="checkbox"
           id={@component_id}
           name={@component_id}
           value="true"
           checked={@checked}
-          {@input_attrs}
         />
         <span>{@label}</span>
       </label>
-    </div>
+    </form>
     """
   end
 end

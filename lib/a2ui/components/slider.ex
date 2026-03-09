@@ -17,7 +17,7 @@ defmodule A2UI.Components.Slider do
     path = binding_path(Map.get(props, "value"))
     a11y = a11y_attrs(assigns.component.accessibility)
     surface_id = assigns.ctx.surface_id
-    input_attrs = input_attrs(path, surface_id)
+    form_attrs = input_attrs(path, surface_id)
 
     assigns =
       assign(assigns,
@@ -25,12 +25,12 @@ defmodule A2UI.Components.Slider do
         min_val: min_val,
         max_val: max_val,
         a11y: a11y,
-        input_attrs: input_attrs,
+        form_attrs: form_attrs,
         component_id: assigns.component.id
       )
 
     ~H"""
-    <div class="a2ui-slider" {@a11y}>
+    <form class="a2ui-slider" {@form_attrs} {@a11y}>
       <input
         type="range"
         id={@component_id}
@@ -38,9 +38,8 @@ defmodule A2UI.Components.Slider do
         min={@min_val}
         max={@max_val}
         value={@value}
-        {@input_attrs}
       />
-    </div>
+    </form>
     """
   end
 end
