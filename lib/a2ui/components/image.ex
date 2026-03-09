@@ -15,12 +15,12 @@ defmodule A2UI.Components.Image do
     fit = Map.get(props, "fit", "cover")
     a11y = a11y_attrs(assigns.component.accessibility)
     alt = get_in(assigns.component.accessibility, ["label"]) || ""
-    style = "object-fit:#{fit}"
+    classes = ["a2ui-image", "a2ui-image--fit-#{fit}"]
 
-    assigns = assign(assigns, url: url, alt: alt, style: style, a11y: a11y)
+    assigns = assign(assigns, url: url, alt: alt, classes: classes, a11y: a11y)
 
     ~H"""
-    <img class="a2ui-image" src={@url} alt={@alt} style={@style} {@a11y} />
+    <img class={@classes} src={@url} alt={@alt} {@a11y} />
     """
   end
 end

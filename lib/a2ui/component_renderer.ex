@@ -41,8 +41,11 @@ defmodule A2UI.ComponentRenderer do
     * `binding_path/1` — extract the `"path"` from a binding map.
       Used by input components to set `phx-value-path`.
 
-    * `flex_style/2` — build an inline flex layout style string from props.
-      `flex_style(props, "row")` → `"display:flex;flex-direction:row;..."`.
+    * `layout_classes/1` — return a list of CSS layout utility class strings
+      from props (justify + align). E.g. `["a2ui-justify-center", "a2ui-align-end"]`.
+
+    * `weight_style/1` — return a CSS custom property string for flex weight,
+      or `nil`. E.g. `"--a2ui-weight: 2"`.
 
     * `input_attrs/2,3` — build phx-change attribute maps for input components.
       `input_attrs(path, surface_id)` for most inputs;
@@ -114,7 +117,8 @@ defmodule A2UI.ComponentRenderer do
           resolve_prop: 4,
           a11y_attrs: 1,
           binding_path: 1,
-          flex_style: 2,
+          layout_classes: 1,
+          weight_style: 1,
           input_attrs: 2,
           input_attrs: 3,
           resolve_child: 3,

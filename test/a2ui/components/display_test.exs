@@ -23,7 +23,7 @@ defmodule A2UI.Components.DisplayTest do
       assert html =~ "<img"
       assert html =~ "a2ui-image"
       assert html =~ ~s(src="https://example.com/photo.jpg")
-      assert html =~ "object-fit:contain"
+      assert html =~ "a2ui-image--fit-contain"
     end
 
     test "resolves data-bound url" do
@@ -63,7 +63,7 @@ defmodule A2UI.Components.DisplayTest do
 
       html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
 
-      assert html =~ "object-fit:cover"
+      assert html =~ "a2ui-image--fit-cover"
     end
   end
 

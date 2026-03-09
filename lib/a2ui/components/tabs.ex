@@ -42,9 +42,8 @@ defmodule A2UI.Components.Tabs do
       </div>
       <div
         :for={tab <- @tabs}
-        class={"a2ui-tabs__panel#{if tab.active, do: " a2ui-tabs__panel--active", else: ""}"}
+        class={["a2ui-tabs__panel", tab.active && "a2ui-tabs__panel--active", !tab.active && "a2ui-tabs__panel--hidden"]}
         role="tabpanel"
-        style={unless tab.active, do: "display:none"}
       >
         <.component :if={tab.child} component={tab.child} ctx={@ctx} />
       </div>

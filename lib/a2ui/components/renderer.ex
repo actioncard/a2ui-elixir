@@ -324,43 +324,46 @@ defmodule A2UI.Components.Renderer do
   def binding_path(_), do: nil
 
   @doc """
-  Builds an inline flex style string from layout props.
-
-  `direction` is `"row"` or `"column"`.
+  Returns a list of CSS layout utility class strings for justify and align props.
   """
-  @spec flex_style(map(), String.t()) :: String.t()
-  def flex_style(props, direction) do
-    justify = justify_value(Map.get(props, "justify"))
-    align = align_value(Map.get(props, "align"))
-    weight = Map.get(props, "weight")
-
-    parts = ["display:flex", "flex-direction:#{direction}"]
-    parts = if justify, do: parts ++ ["justify-content:#{justify}"], else: parts
-    parts = if align, do: parts ++ ["align-items:#{align}"], else: parts
-    parts = if weight, do: parts ++ ["flex-grow:#{weight}"], else: parts
-
-    Enum.join(parts, ";")
+  @spec layout_classes(map()) :: [String.t()]
+  def layout_classes(props) do
+    classes = []
+    classes = if j = justify_class(Map.get(props, "justify")), do: [j | classes], else: classes
+    classes = if a = align_class(Map.get(props, "align")), do: [a | classes], else: classes
+    Enum.reverse(classes)
   end
 
-  @justify_map %{
-    "start" => "flex-start",
-    "center" => "center",
-    "end" => "flex-end",
-    "spaceBetween" => "space-between",
-    "spaceAround" => "space-around",
-    "spaceEvenly" => "space-evenly"
+  @doc """
+  Returns a CSS custom property string for flex weight, or nil if no weight.
+  """
+  @spec weight_style(map()) :: String.t() | nil
+  def weight_style(props) do
+    case Map.get(props, "weight") do
+      nil -> nil
+      w -> "--a2ui-weight: #{w}"
+    end
+  end
+
+  @justify_class_map %{
+    "start" => "a2ui-justify-start",
+    "center" => "a2ui-justify-center",
+    "end" => "a2ui-justify-end",
+    "spaceBetween" => "a2ui-justify-space-between",
+    "spaceAround" => "a2ui-justify-space-around",
+    "spaceEvenly" => "a2ui-justify-space-evenly"
   }
 
-  @align_map %{
-    "start" => "flex-start",
-    "center" => "center",
-    "end" => "flex-end",
-    "stretch" => "stretch"
+  @align_class_map %{
+    "start" => "a2ui-align-start",
+    "center" => "a2ui-align-center",
+    "end" => "a2ui-align-end",
+    "stretch" => "a2ui-align-stretch"
   }
 
-  defp justify_value(nil), do: nil
-  defp justify_value(v), do: Map.get(@justify_map, v)
+  defp justify_class(nil), do: nil
+  defp justify_class(v), do: Map.get(@justify_class_map, v)
 
-  defp align_value(nil), do: nil
-  defp align_value(v), do: Map.get(@align_map, v)
+  defp align_class(nil), do: nil
+  defp align_class(v), do: Map.get(@align_class_map, v)
 end

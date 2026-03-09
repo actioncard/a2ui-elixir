@@ -32,7 +32,7 @@ defmodule A2UI.Components.Modal do
       <div :if={@entry_child} class="a2ui-modal__entry">
         <.component component={@entry_child} ctx={@ctx} />
       </div>
-      <div :if={@content_child} class="a2ui-modal__overlay" style="display:none" role="dialog">
+      <div :if={@content_child} class="a2ui-modal__overlay a2ui-modal__overlay--hidden" role="dialog">
         <div class="a2ui-modal__content">
           <.component component={@content_child} ctx={@ctx} />
         </div>

@@ -18,15 +18,20 @@ defmodule A2UI.Components.ListComponent do
   def render(assigns) do
     props = assigns.component.props
     direction = Map.get(props, "direction", "vertical")
-    flex_dir = if direction == "horizontal", do: "row", else: "column"
-    style = flex_style(props, flex_dir)
+
+    classes =
+      ["a2ui-list"] ++
+        if(direction == "horizontal", do: ["a2ui-list--horizontal"], else: []) ++
+        layout_classes(props)
+
+    style = weight_style(props)
     a11y = a11y_attrs(assigns.component.accessibility)
     children = resolve_children(assigns.component, assigns.ctx)
 
-    assigns = assign(assigns, style: style, a11y: a11y, children: children)
+    assigns = assign(assigns, classes: classes, style: style, a11y: a11y, children: children)
 
     ~H"""
-    <div class="a2ui-list" role="list" style={@style} {@a11y}>
+    <div class={@classes} role="list" style={@style} {@a11y}>
       <div :for={{child, scope} <- @children} class="a2ui-list__item" role="listitem">
         <.component component={child} ctx={maybe_scope(@ctx, scope)} />
       </div>

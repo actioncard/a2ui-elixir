@@ -22,7 +22,6 @@ defmodule A2UI.Components.LayoutTest do
       html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
 
       assert html =~ "a2ui-row"
-      assert html =~ "flex-direction:row"
       assert html =~ "Left"
       assert html =~ "Right"
     end
@@ -40,8 +39,8 @@ defmodule A2UI.Components.LayoutTest do
 
       html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
 
-      assert html =~ "justify-content:space-between"
-      assert html =~ "align-items:center"
+      assert html =~ "a2ui-justify-space-between"
+      assert html =~ "a2ui-align-center"
     end
   end
 
@@ -59,7 +58,6 @@ defmodule A2UI.Components.LayoutTest do
       html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
 
       assert html =~ "a2ui-column"
-      assert html =~ "flex-direction:column"
       assert html =~ "Top"
     end
 
@@ -70,7 +68,7 @@ defmodule A2UI.Components.LayoutTest do
 
       html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
 
-      assert html =~ "flex-grow:2"
+      assert html =~ "--a2ui-weight: 2"
     end
   end
 
@@ -92,7 +90,6 @@ defmodule A2UI.Components.LayoutTest do
       assert html =~ ~s(role="list")
       assert html =~ "a2ui-list__item"
       assert html =~ ~s(role="listitem")
-      assert html =~ "flex-direction:column"
       assert html =~ "Item 1"
       assert html =~ "Item 2"
     end
@@ -109,7 +106,7 @@ defmodule A2UI.Components.LayoutTest do
 
       html = rendered_to_string(~H"<Renderer.component component={@component} ctx={@ctx} />")
 
-      assert html =~ "flex-direction:row"
+      assert html =~ "a2ui-list--horizontal"
     end
 
     test "renders template children" do

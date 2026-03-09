@@ -225,22 +225,29 @@ defmodule A2UI.Components.RendererTest do
     end
   end
 
-  describe "flex_style/2" do
-    test "builds row style" do
-      style = Renderer.flex_style(%{"justify" => "center", "align" => "end"}, "row")
-      assert style =~ "flex-direction:row"
-      assert style =~ "justify-content:center"
-      assert style =~ "align-items:flex-end"
+  describe "layout_classes/1" do
+    test "returns justify and align classes" do
+      classes = Renderer.layout_classes(%{"justify" => "center", "align" => "end"})
+      assert classes == ["a2ui-justify-center", "a2ui-align-end"]
     end
 
-    test "includes weight" do
-      style = Renderer.flex_style(%{"weight" => 2}, "column")
-      assert style =~ "flex-grow:2"
+    test "returns empty list when no layout props" do
+      assert Renderer.layout_classes(%{}) == []
     end
 
-    test "omits nil values" do
-      style = Renderer.flex_style(%{}, "row")
-      assert style == "display:flex;flex-direction:row"
+    test "handles spaceBetween" do
+      classes = Renderer.layout_classes(%{"justify" => "spaceBetween"})
+      assert classes == ["a2ui-justify-space-between"]
+    end
+  end
+
+  describe "weight_style/1" do
+    test "returns custom property for weight" do
+      assert Renderer.weight_style(%{"weight" => 2}) == "--a2ui-weight: 2"
+    end
+
+    test "returns nil when no weight" do
+      assert Renderer.weight_style(%{}) == nil
     end
   end
 

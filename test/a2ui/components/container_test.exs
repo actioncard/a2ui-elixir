@@ -99,7 +99,7 @@ defmodule A2UI.Components.ContainerTest do
       assert html =~ "a2ui-tabs__tab--active"
 
       # Second panel should be hidden
-      assert html =~ ~s(style="display:none")
+      assert html =~ "a2ui-tabs__panel--hidden"
 
       # First panel should be visible (active)
       assert html =~ "a2ui-tabs__panel--active"
@@ -132,7 +132,7 @@ defmodule A2UI.Components.ContainerTest do
       assert html =~ "a2ui-modal__entry"
       assert html =~ "Open"
       assert html =~ "a2ui-modal__overlay"
-      assert html =~ ~s(style="display:none")
+      assert html =~ "a2ui-modal__overlay--hidden"
       assert html =~ ~s(role="dialog")
       assert html =~ "a2ui-modal__content"
       assert html =~ "Modal content"
