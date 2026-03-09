@@ -184,38 +184,93 @@ defmodule A2UI.Components.Renderer do
   end
 
   defp render_template_children(assigns, config) do
-    base_path = assigns.ctx.scope_path || ""
+    children = expand_template_entries(config, assigns.ctx)
+    assigns = assign(assigns, children: children)
 
-    case ComponentTree.expand_template(config, assigns.ctx.data_model, base_path) do
-      {:ok, entries} ->
-        template_id = config["componentId"]
-        template_component = Map.get(assigns.ctx.components, template_id)
-
-        if template_component do
-          children =
-            Enum.map(entries, fn {virtual_id, _index, scope_path} ->
-              {%{template_component | id: virtual_id}, scope_path}
-            end)
-
-          assigns = assign(assigns, children: children)
-
-          ~H"""
-          <.component
-            :for={{child, scope_path} <- @children}
-            component={child}
-            ctx={RenderContext.with_scope(@ctx, scope_path)}
-          />
-          """
-        else
-          ~H""
-        end
-
-      {:error, _reason} ->
-        ~H""
-    end
+    ~H"""
+    <.component
+      :for={{child, scope_path} <- @children}
+      component={child}
+      ctx={RenderContext.with_scope(@ctx, scope_path)}
+    />
+    """
   end
 
   # ── Helpers (used by component modules) ──
+
+  @doc """
+  Builds phx-change attributes for an input component bound to a data model path.
+
+  Returns an empty map when `path` is nil (no binding).
+  """
+  @spec input_attrs(String.t() | nil, String.t()) :: map()
+  def input_attrs(nil, _surface_id), do: %{}
+
+  def input_attrs(path, surface_id) do
+    %{
+      "phx-change" => "a2ui_input_change",
+      "phx-value-path" => path,
+      "phx-value-surface-id" => surface_id
+    }
+  end
+
+  @doc """
+  Like `input_attrs/2` but includes `phx-value-input-type` for components
+  that need to disambiguate (e.g. ChoicePicker radio vs checkbox).
+  """
+  @spec input_attrs(String.t() | nil, String.t(), String.t()) :: map()
+  def input_attrs(nil, _surface_id, _input_type), do: %{}
+
+  def input_attrs(path, surface_id, input_type) do
+    %{
+      "phx-change" => "a2ui_input_change",
+      "phx-value-path" => path,
+      "phx-value-surface-id" => surface_id,
+      "phx-value-input-type" => input_type
+    }
+  end
+
+  @doc """
+  Resolves a single named child component from props.
+
+  Looks up `key` in `props` to get a component ID, then fetches that component
+  from `ctx.components`. Returns `nil` if the key is absent or the ID is not found.
+  """
+  @spec resolve_child(map(), String.t(), RenderContext.t()) :: A2UI.Component.t() | nil
+  def resolve_child(props, key, ctx) do
+    case Map.get(props, key) do
+      nil -> nil
+      id -> Map.get(ctx.components, id)
+    end
+  end
+
+  @doc """
+  Expands a template config into a list of `{component, scope_path}` tuples.
+
+  Used by List and Renderer to materialise template children from data model arrays.
+  Returns `[]` on error or when the template component is not found.
+  """
+  @spec expand_template_entries(map(), RenderContext.t()) :: [{A2UI.Component.t(), String.t()}]
+  def expand_template_entries(config, ctx) do
+    base_path = ctx.scope_path || ""
+
+    case ComponentTree.expand_template(config, ctx.data_model, base_path) do
+      {:ok, entries} ->
+        template_id = config["componentId"]
+        template = Map.get(ctx.components, template_id)
+
+        if template do
+          Enum.map(entries, fn {virtual_id, _index, scope_path} ->
+            {%{template | id: virtual_id}, scope_path}
+          end)
+        else
+          []
+        end
+
+      {:error, _} ->
+        []
+    end
+  end
 
   @doc """
   Resolves a prop value through data binding.

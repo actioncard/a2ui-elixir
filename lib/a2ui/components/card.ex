@@ -13,11 +13,7 @@ defmodule A2UI.Components.Card do
     props = assigns.component.props
     a11y = a11y_attrs(assigns.component.accessibility)
 
-    child =
-      case Map.get(props, "child") do
-        nil -> nil
-        child_id -> Map.get(assigns.ctx.components, child_id)
-      end
+    child = resolve_child(props, "child", assigns.ctx)
 
     assigns = assign(assigns, a11y: a11y, child: child)
 

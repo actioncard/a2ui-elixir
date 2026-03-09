@@ -74,14 +74,4 @@ defmodule A2UI.Components.TextField do
       """
     end
   end
-
-  defp input_attrs(nil, _surface_id), do: %{}
-
-  defp input_attrs(path, surface_id) do
-    %{
-      "phx-change" => "a2ui_input_change",
-      "phx-value-path" => path,
-      "phx-value-surface-id" => surface_id
-    }
-  end
 end

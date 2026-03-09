@@ -51,15 +51,4 @@ defmodule A2UI.Components.ChoicePicker do
     </fieldset>
     """
   end
-
-  defp input_attrs(nil, _surface_id, _input_type), do: %{}
-
-  defp input_attrs(path, surface_id, input_type) do
-    %{
-      "phx-change" => "a2ui_input_change",
-      "phx-value-path" => path,
-      "phx-value-surface-id" => surface_id,
-      "phx-value-input-type" => input_type
-    }
-  end
 end

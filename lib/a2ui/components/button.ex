@@ -19,11 +19,7 @@ defmodule A2UI.Components.Button do
     class = "a2ui-button a2ui-button--#{variant}"
     action_attrs = action_attrs(action, assigns.component.id, assigns.ctx.surface_id)
 
-    child =
-      case Map.get(props, "child") do
-        nil -> nil
-        child_id -> Map.get(assigns.ctx.components, child_id)
-      end
+    child = resolve_child(props, "child", assigns.ctx)
 
     assigns = assign(assigns, class: class, a11y: a11y, action_attrs: action_attrs, child: child)
 

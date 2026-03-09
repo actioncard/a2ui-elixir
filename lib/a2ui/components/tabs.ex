@@ -21,7 +21,7 @@ defmodule A2UI.Components.Tabs do
       tab_items
       |> Enum.with_index()
       |> Enum.map(fn {item, index} ->
-        child = Map.get(assigns.ctx.components, item["child"])
+        child = resolve_child(item, "child", assigns.ctx)
         %{title: item["title"], child: child, active: index == 0, index: index}
       end)
 

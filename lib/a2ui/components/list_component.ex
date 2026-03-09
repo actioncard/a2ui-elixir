@@ -43,30 +43,9 @@ defmodule A2UI.Components.ListComponent do
         |> Enum.map(&{&1, nil})
 
       {:template, config} ->
-        expand_template_children(config, ctx)
+        expand_template_entries(config, ctx)
 
       {:none, []} ->
-        []
-    end
-  end
-
-  defp expand_template_children(config, ctx) do
-    base_path = ctx.scope_path || ""
-
-    case ComponentTree.expand_template(config, ctx.data_model, base_path) do
-      {:ok, entries} ->
-        template_id = config["componentId"]
-        template = Map.get(ctx.components, template_id)
-
-        if template do
-          Enum.map(entries, fn {virtual_id, _index, scope_path} ->
-            {%{template | id: virtual_id}, scope_path}
-          end)
-        else
-          []
-        end
-
-      {:error, _} ->
         []
     end
   end

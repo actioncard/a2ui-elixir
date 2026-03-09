@@ -44,6 +44,17 @@ defmodule A2UI.ComponentRenderer do
     * `flex_style/2` — build an inline flex layout style string from props.
       `flex_style(props, "row")` → `"display:flex;flex-direction:row;..."`.
 
+    * `input_attrs/2,3` — build phx-change attribute maps for input components.
+      `input_attrs(path, surface_id)` for most inputs;
+      `input_attrs(path, surface_id, input_type)` when disambiguation is needed
+      (e.g. ChoicePicker). Returns `%{}` when `path` is `nil`.
+
+    * `resolve_child/3` — resolve a single named child component from props.
+      `resolve_child(props, "child", ctx)` returns the component or `nil`.
+
+    * `expand_template_entries/2` — expand a template config into
+      `{component, scope_path}` tuples for template-based children.
+
     * `component/1` — render a child component by dispatching to the type
       registry. Expects `component` and `ctx` assigns.
 
@@ -104,6 +115,10 @@ defmodule A2UI.ComponentRenderer do
           a11y_attrs: 1,
           binding_path: 1,
           flex_style: 2,
+          input_attrs: 2,
+          input_attrs: 3,
+          resolve_child: 3,
+          expand_template_entries: 2,
           render_children: 1,
           component: 1
         ]

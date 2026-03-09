@@ -16,17 +16,8 @@ defmodule A2UI.Components.Modal do
     props = assigns.component.props
     a11y = a11y_attrs(assigns.component.accessibility)
 
-    entry_child =
-      case Map.get(props, "entryPointChild") do
-        nil -> nil
-        id -> Map.get(assigns.ctx.components, id)
-      end
-
-    content_child =
-      case Map.get(props, "contentChild") do
-        nil -> nil
-        id -> Map.get(assigns.ctx.components, id)
-      end
+    entry_child = resolve_child(props, "entryPointChild", assigns.ctx)
+    content_child = resolve_child(props, "contentChild", assigns.ctx)
 
     assigns =
       assign(assigns,
