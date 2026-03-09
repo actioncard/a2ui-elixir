@@ -399,18 +399,18 @@ a2ui/
       # ── Protocol Layer (no Phoenix dependency) ──
       protocol/
         message.ex                       # Union type + from_json/1 pattern-match dispatcher
+        parser.ex                        # JSONL stream → message structs (single + streaming)
         messages/
           create_surface.ex              # %CreateSurface{}
           update_components.ex           # %UpdateComponents{}
           update_data_model.ex           # %UpdateDataModel{}
           delete_surface.ex              # %DeleteSurface{}
           action.ex                      # %Action{} (client → server)
-        parser.ex                        # JSONL stream → message structs (single + streaming)
 
       # ── Core Data Structures ──
       surface.ex                         # %Surface{id, catalog_id, theme, components, data_model, ...}
       component.ex                       # %Component{id, type, props, accessibility}
-      component_tree.ex                  # Adjacency list ops: root/1, child_ids/1, expand_template/2
+      component_tree.ex                  # Adjacency list ops: root/1, child_ids/1, expand_template/3
       data_model.ex                      # JSON document store: get/set/delete via JSON Pointer
       data_model/
         json_pointer.ex                  # RFC 6901: parse, resolve, escape/unescape
@@ -420,19 +420,22 @@ a2ui/
       surface_manager.ex                 # Pure functions: apply_message(surfaces, msg) → surfaces
 
       # ── Transport ──
-      transport.ex                       # Behaviour: connect/2, send_message/3, subscribe/1, disconnect/1
+      transport.ex                       # Behaviour: connect/1, send_action/3, disconnect/1
       transport/
-        local.ex                         # PubSub / direct process messaging
+        local.ex                         # Process messaging transport
 
       # ── Phoenix/LiveView Integration ──
-      live.ex                            # `use A2UI.Live` macro
+      live.ex                            # `use A2UI.Live` macro + behaviour
       live/
         event_handler.ex                 # phx-* events → A2UI action messages
+        init_hook.ex                     # on_mount hook: initializes @a2ui_surfaces
 
       # ── Function Components ──
+      component_renderer.ex              # Behaviour for custom component renderers
       components.ex                      # `use A2UI.Components` convenience import
       components/
-        renderer.ex                      # Entry point + type dispatch
+        render_context.ex                # RenderContext struct (components, data_model, surface_id, scope_path)
+        renderer.ex                      # Entry point: surface/1, component/1 + type dispatch
         text.ex
         button.ex
         image.ex
@@ -450,7 +453,22 @@ a2ui/
         slider.ex
         date_time_input.ex
 
+      # ── Demo Application (dev only) ──
+      demo/
+        agent.ex                         # Demo agent GenServer
+        demo_live.ex                     # Demo LiveView page
+        endpoint.ex                      # Phoenix Endpoint for demo
+        error_html.ex                    # Error page template
+        layouts.ex                       # Layout components
+        router.ex                        # Demo routes
+        status_badge.ex                  # Custom component example
+
+    mix/
+      tasks/
+        a2ui.demo.ex                     # Mix task to run the demo
+
   test/
+    test_helper.exs
     a2ui/
       protocol/
         parser_test.exs
@@ -461,14 +479,24 @@ a2ui/
         binding_test.exs
       component_tree_test.exs
       surface_manager_test.exs
+      live_test.exs
       components/
         renderer_test.exs
         text_test.exs
         button_test.exs
-        text_field_test.exs
+        display_test.exs
+        input_test.exs
+        layout_test.exs
+        container_test.exs
+      live/
+        event_handler_test.exs
+      transport/
+        local_test.exs
+      demo/
+        agent_test.exs
     support/
+      component_helpers.ex               # Test builders: make_component, make_ctx, make_surface
       fixtures/                          # JSON fixtures from A2UI spec
-    test_helper.exs
 ```
 
 ## Key Design Decisions
@@ -487,11 +515,11 @@ Component props stay as raw JSON (with `{"path": "..."}` maps) until render. The
 
 ### 4. Adjacency List Stays Flat
 
-No tree reconstruction. The renderer walks the flat `%{id => component}` map via ID lookups. Container components call `Renderer.render_component/1` recursively for their children. This matches A2UI's design philosophy exactly.
+No tree reconstruction. The renderer walks the flat `%{id => component}` map via ID lookups. Container components call `Renderer.component/1` recursively for their children. This matches A2UI's design philosophy exactly.
 
 ### 5. CSS Convention
 
-Components render with `a2ui-*` BEM-style CSS classes. Layout uses Tailwind-compatible utility classes. Users can override styling via their own CSS or configure a custom class mapping.
+Components render with `a2ui-*` BEM-style CSS classes (e.g. `a2ui-text--h1`, `a2ui-button--primary`). Layout currently uses inline flex styles generated by `Renderer.flex_style/2`. Users can override styling via their own CSS or configure a custom class mapping.
 
 ### 6. Transport as Behaviour
 
@@ -509,53 +537,92 @@ defp deps do
 
     # Dev/Test
     {:floki, "~> 0.36", only: :test},
-    {:ex_doc, "~> 0.34", only: :dev, runtime: false}
+    {:ex_doc, "~> 0.34", only: :dev, runtime: false},
+    {:bandit, "~> 1.0", only: :dev},
+    {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+    {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
   ]
 end
 ```
 
 ## Implementation Phases
 
-### Phase 1: Core Protocol + Data Structures
+### Completed
 
-1. Project scaffold (`mix new a2ui`)
-2. `A2UI.DataModel.JsonPointer` - RFC 6901 implementation
-3. `A2UI.DataModel` - JSON document store with get/set/delete
-4. `A2UI.Component` - struct + `from_map/1`
-5. `A2UI.Surface` - struct
-6. Protocol message structs (CreateSurface, UpdateComponents, UpdateDataModel, DeleteSurface, Action)
-7. `A2UI.Protocol.Parser` - JSON + JSONL parsing with pattern-match dispatch
-8. Unit tests for all of the above
+- **Phase 1**: Core Protocol + Data Structures (JSON Pointer, DataModel, Component, Surface, message structs, JSONL parser)
+- **Phase 2**: State Management + Data Binding (Binding resolution, ComponentTree, SurfaceManager)
+- **Phase 3**: Phoenix Components + Renderer (16 built-in components, type dispatch, Floki tests)
+- **Phase 4**: LiveView Integration + Events (EventHandler, `use A2UI.Live` macro, Transport behaviour, Transport.Local)
+- **Demo**: Demo application with agent, LiveView page, custom StatusBadge component
 
-### Phase 2: State Management + Data Binding
+212 tests, all passing.
 
-1. `A2UI.DataModel.Binding` - resolve literals, paths, function calls
-2. `A2UI.ComponentTree` - root, child_ids, expand_template, validate_references
-3. `A2UI.SurfaceManager` - apply_message for each message type
-4. Unit tests for binding resolution, tree operations, state transitions
+### Phase 5: Missing Catalog Components
 
-### Phase 3: Phoenix Components + Renderer
+Add `Video` and `AudioPlayer` components from the A2UI basic catalog (listed in spec but not yet implemented).
 
-1. `A2UI.Components.Renderer` - surface entry point + type dispatch
-2. Layout components: Row, Column, List (static + template children)
-3. Display components: Text, Image, Icon, Divider
-4. Interactive components: Button, TextField, CheckBox, ChoicePicker, Slider, DateTimeInput
-5. Container components: Card, Tabs, Modal
-6. Component rendering tests with Floki
+1. **`Video` component** (`lib/a2ui/components/video.ex`)
+   - Renders `<video>` tag with `a2ui-video` class
+   - Props: `url` (string/binding → `src`), `autoplay` (boolean → attribute), `controls` (boolean → attribute, default true)
+   - Use `resolve_prop` for url binding, `a11y_attrs` for accessibility
+   - Wrap in `<div class="a2ui-video">` for consistency
+2. **`AudioPlayer` component** (`lib/a2ui/components/audio_player.ex`)
+   - Renders `<audio>` tag with `a2ui-audio-player` class
+   - Props: `url` (string/binding → `src`), `controls` (boolean → attribute, default true)
+   - Same pattern as Video
+3. Register both in `@default_components` map in `Renderer` (`lib/a2ui/components/renderer.ex`)
+4. Add tests in `test/a2ui/components/` following existing patterns (use `make_component`, `make_ctx` from `test/support/component_helpers.ex`)
+5. Update `@default_components` count reference in `Renderer` moduledoc ("16 built-in" → "18 built-in")
 
-### Phase 4: LiveView Integration + Events
+### Phase 6: Extract Shared Component Helpers
 
-1. `A2UI.Live.EventHandler` - translate phx events to A2UI actions
-2. `use A2UI.Live` macro - inject handle_info/handle_event handlers
-3. `A2UI.Transport` behaviour + `A2UI.Transport.Local`
-4. Integration tests: full message flow → rendered HTML → action dispatch
+Reduce duplication across components by extracting common patterns into shared functions.
 
-### Phase 5: Demo + Polish
+1. **`input_attrs/2,3`**: 5 input components (`text_field.ex`, `check_box.ex`, `slider.ex`, `date_time_input.ex`, `choice_picker.ex`) each define identical private `input_attrs` functions that build `%{"phx-change" => "a2ui_input_change", "phx-value-path" => path, "phx-value-surface-id" => surface_id}`. `ChoicePicker` adds `"phx-value-input-type"`. Extract to `Renderer` as public functions. Add to import list in `ComponentRenderer.__using__/1` (`lib/a2ui/component_renderer.ex`). Remove private `input_attrs` from all 5 components.
+2. **`resolve_child/3`**: 4 components (`button.ex`, `card.ex`, `modal.ex`, `tabs.ex`) repeat `case Map.get(props, key) do nil -> nil; id -> Map.get(ctx.components, id) end`. Extract as `resolve_child(props, key, ctx)` in `Renderer`. Add to import list in `ComponentRenderer.__using__/1`. Replace inline patterns in all 4 components.
+3. **Consolidate template expansion**: `ListComponent.expand_template_children/2` and `Renderer.render_template_children/2` both call `ComponentTree.expand_template/3` and build `{%{template | id: virtual_id}, scope_path}` tuples. Extract shared `expand_template_entries(config, ctx)` in `Renderer` returning `[{%Component{}, scope_path}]`. Both call sites use it.
 
-1. Demo LiveView page with hardcoded agent (restaurant booking example)
-2. CSS defaults / Tailwind integration
-3. Documentation (ExDoc)
-4. Hex package preparation
+### Phase 7: Remove Dead Code + Rename
+
+1. **Delete `lib/a2ui/components.ex`** — the `A2UI.Components` module is a one-line macro (`import A2UI.Components.Renderer, only: [surface: 1, component: 1]`) that duplicates what `A2UI.Live.__using__/1` already does. Verify with `grep -r "A2UI.Components" lib/ test/` (should only find `A2UI.Components.Renderer` and `A2UI.Components.*` submodules, no `use A2UI.Components`).
+2. **Rename `live_component_fn/1` → `dispatch_render/1`** in `lib/a2ui/components/renderer.ex`. This private function dispatches to `assigns.module.render(assigns)` — the name `live_component_fn` falsely implies `Phoenix.LiveComponent` involvement. Also update the HEEx call site in `component/1` from `<.live_component_fn .../>` to `<.dispatch_render .../>`.
+
+### Phase 8: CSS Class Cleanup
+
+Replace inline `style` attributes with CSS classes for visibility toggling.
+
+1. Replace `style="display:none"` in `Modal` (`lib/a2ui/components/modal.ex`) with class `a2ui-modal__overlay--hidden`
+2. Replace `style={unless tab.active, do: "display:none"}` in `Tabs` (`lib/a2ui/components/tabs.ex`) with class `a2ui-tabs__panel--hidden` (add when not active)
+3. Update tests asserting on `style` attribute to assert on class instead
+
+### Phase 9: CSS Styling Overhaul
+
+Replace inline flex styles with CSS classes and ship a default stylesheet.
+
+1. Replace inline flex styles with CSS classes. Currently `flex_style/2` in `Renderer` (`lib/a2ui/components/renderer.ex`) builds inline `style="display:flex;flex-direction:row;justify-content:center;..."` strings. Layout components Row, Column, ListComponent use these inline styles via their `style` attribute.
+2. New approach: generate CSS class lists instead. E.g. `a2ui-row`, `a2ui-row--justify-center`, `a2ui-row--align-stretch`, `a2ui-row--weight-2`.
+3. Create `priv/static/a2ui.css` with default styles for all `a2ui-*` classes:
+   - Base layout: `.a2ui-row { display: flex; flex-direction: row; }`, `.a2ui-column { display: flex; flex-direction: column; }`
+   - Justify modifiers: `--justify-start`, `--justify-center`, `--justify-end`, `--justify-space-between`, `--justify-space-around`, `--justify-space-evenly`
+   - Align modifiers: `--align-start`, `--align-center`, `--align-end`, `--align-stretch`
+   - Weight via CSS custom property or utility classes
+   - Hidden states: `.a2ui-tabs__panel--hidden`, `.a2ui-modal__overlay--hidden`
+   - Component base styles: `.a2ui-card`, `.a2ui-button`, `.a2ui-text-field`, etc.
+4. Replace `flex_style/2` with `layout_classes/2` that returns a class string
+5. Update Row, Column, ListComponent to use `class` instead of `style`
+6. Consumer imports CSS: `<link rel="stylesheet" href={~p"/a2ui/a2ui.css"} />`
+
+### Phase 10: Isolate Demo from Package
+
+Move demo files out of the published library's compilation path.
+
+1. Move `lib/a2ui/demo/` files to `dev/demo/a2ui/demo/` (preserving module namespace)
+2. Update `mix.exs` `elixirc_paths`:
+   - `:dev` → `["lib", "dev/demo"]`
+   - `:test` → `["lib", "test/support"]`
+   - default → `["lib"]`
+3. Gate StatusBadge component_modules config in `config/config.exs` under `if Mix.env() == :dev`
+4. Verify `mix.exs` `package/files` list excludes `dev/`
 
 ## Example Usage
 
@@ -567,7 +634,7 @@ defmodule MyAppWeb.AgentLive do
 
   def mount(_params, _session, socket) do
     # Connect to local agent
-    {:ok, transport} = A2UI.Transport.Local.connect("", agent_pid: MyApp.Agent)
+    {:ok, transport} = A2UI.Transport.Local.connect(agent: MyApp.Agent)
     {:ok, assign(socket, transport: transport)}
   end
 
@@ -581,7 +648,7 @@ defmodule MyAppWeb.AgentLive do
 
   # Override to dispatch actions to agent
   def handle_a2ui_action(action, metadata, socket) do
-    A2UI.Transport.Local.send_message(socket.assigns.transport, action, metadata)
+    A2UI.Transport.Local.send_action(socket.assigns.transport, action, metadata)
     {:noreply, socket}
   end
 end
