@@ -138,13 +138,13 @@ defmodule A2UI.Components.Renderer do
         assigns = assign(assigns, module: module)
 
         ~H"""
-        <.live_component_fn module={@module} component={@component} ctx={@ctx} />
+        <.dispatch_render module={@module} component={@component} ctx={@ctx} />
         """
     end
   end
 
   # Trampoline to call module.render/1 from HEEx
-  defp live_component_fn(assigns) do
+  defp dispatch_render(assigns) do
     assigns.module.render(assigns)
   end
 

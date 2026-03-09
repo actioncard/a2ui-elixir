@@ -432,7 +432,6 @@ a2ui/
 
       # ── Function Components ──
       component_renderer.ex              # Behaviour for custom component renderers
-      components.ex                      # `use A2UI.Components` convenience import
       components/
         render_context.ex                # RenderContext struct (components, data_model, surface_id, scope_path)
         renderer.ex                      # Entry point: surface/1, component/1 + type dispatch
@@ -556,23 +555,12 @@ end
 - **Phase 2**: State Management + Data Binding (Binding resolution, ComponentTree, SurfaceManager)
 - **Phase 3**: Phoenix Components + Renderer (18 built-in components, type dispatch, Floki tests)
 - **Phase 4**: LiveView Integration + Events (EventHandler, `use A2UI.Live` macro, Transport behaviour, Transport.Local)
-- **Phase 5**: Video & AudioPlayer components (complete basic catalog coverage)
 - **Demo**: Demo application with agent, LiveView page, custom StatusBadge component
+- **Phase 5**: Video & AudioPlayer components (complete basic catalog coverage)
+- **Phase 6**: Extract Shared Component Helpers (`input_attrs/2,3`, `resolve_child/3`, `expand_template_entries/2` into Renderer)
+- **Phase 7**: Remove dead code (`A2UI.Components` module) + rename `live_component_fn/1` → `dispatch_render/1`
 
 232 tests, all passing.
-
-### Phase 6: Extract Shared Component Helpers
-
-Reduce duplication across components by extracting common patterns into shared functions.
-
-1. **`input_attrs/2,3`**: 5 input components (`text_field.ex`, `check_box.ex`, `slider.ex`, `date_time_input.ex`, `choice_picker.ex`) each define identical private `input_attrs` functions that build `%{"phx-change" => "a2ui_input_change", "phx-value-path" => path, "phx-value-surface-id" => surface_id}`. `ChoicePicker` adds `"phx-value-input-type"`. Extract to `Renderer` as public functions. Add to import list in `ComponentRenderer.__using__/1` (`lib/a2ui/component_renderer.ex`). Remove private `input_attrs` from all 5 components.
-2. **`resolve_child/3`**: 4 components (`button.ex`, `card.ex`, `modal.ex`, `tabs.ex`) repeat `case Map.get(props, key) do nil -> nil; id -> Map.get(ctx.components, id) end`. Extract as `resolve_child(props, key, ctx)` in `Renderer`. Add to import list in `ComponentRenderer.__using__/1`. Replace inline patterns in all 4 components.
-3. **Consolidate template expansion**: `ListComponent.expand_template_children/2` and `Renderer.render_template_children/2` both call `ComponentTree.expand_template/3` and build `{%{template | id: virtual_id}, scope_path}` tuples. Extract shared `expand_template_entries(config, ctx)` in `Renderer` returning `[{%Component{}, scope_path}]`. Both call sites use it.
-
-### Phase 7: Remove Dead Code + Rename
-
-1. **Delete `lib/a2ui/components.ex`** — the `A2UI.Components` module is a one-line macro (`import A2UI.Components.Renderer, only: [surface: 1, component: 1]`) that duplicates what `A2UI.Live.__using__/1` already does. Verify with `grep -r "A2UI.Components" lib/ test/` (should only find `A2UI.Components.Renderer` and `A2UI.Components.*` submodules, no `use A2UI.Components`).
-2. **Rename `live_component_fn/1` → `dispatch_render/1`** in `lib/a2ui/components/renderer.ex`. This private function dispatches to `assigns.module.render(assigns)` — the name `live_component_fn` falsely implies `Phoenix.LiveComponent` involvement. Also update the HEEx call site in `component/1` from `<.live_component_fn .../>` to `<.dispatch_render .../>`.
 
 ### Phase 8: CSS Class Cleanup
 
