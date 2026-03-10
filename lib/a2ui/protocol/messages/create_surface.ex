@@ -30,4 +30,32 @@ defmodule A2UI.Protocol.Messages.CreateSurface do
       send_data_model: Map.get(map, "sendDataModel", false)
     }
   end
+
+  @doc """
+  Converts a CreateSurface struct back to a JSON-compatible map (inner object).
+
+  Omits `"theme"` when all values are nil and `"sendDataModel"` when false.
+  """
+  @spec to_map(t()) :: map()
+  def to_map(%__MODULE__{} = msg) do
+    base = %{"surfaceId" => msg.surface_id, "catalogId" => msg.catalog_id}
+
+    base =
+      case theme_to_map(msg.theme) do
+        map when map == %{} -> base
+        theme_map -> Map.put(base, "theme", theme_map)
+      end
+
+    if msg.send_data_model, do: Map.put(base, "sendDataModel", true), else: base
+  end
+
+  defp theme_to_map(theme) do
+    pairs = [
+      {"primaryColor", theme[:primary_color]},
+      {"iconUrl", theme[:icon_url]},
+      {"agentDisplayName", theme[:agent_display_name]}
+    ]
+
+    for {key, val} <- pairs, val != nil, into: %{}, do: {key, val}
+  end
 end

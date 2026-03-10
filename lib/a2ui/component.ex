@@ -40,4 +40,26 @@ defmodule A2UI.Component do
       accessibility: accessibility
     }
   end
+
+  @doc """
+  Converts a Component struct back to a JSON-compatible map.
+
+  Inverse of `from_map/1`. Props are spread as top-level keys,
+  and `"accessibility"` is included only when non-nil.
+
+  ## Examples
+
+      iex> A2UI.Component.to_map(%A2UI.Component{id: "h", type: "Text", props: %{"text" => "Hi"}})
+      %{"id" => "h", "component" => "Text", "text" => "Hi"}
+  """
+  @spec to_map(t()) :: map()
+  def to_map(%__MODULE__{} = component) do
+    base = Map.merge(component.props, %{"id" => component.id, "component" => component.type})
+
+    if component.accessibility do
+      Map.put(base, "accessibility", component.accessibility)
+    else
+      base
+    end
+  end
 end

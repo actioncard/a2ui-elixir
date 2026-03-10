@@ -75,4 +75,41 @@ defmodule A2UI.Protocol.Message do
         {:error, "JSON decode error: #{Exception.message(err)}"}
     end
   end
+
+  @doc """
+  Converts a message struct to a JSON-compatible map.
+
+  Server→client messages are wrapped with `"version": "v0.9"`.
+  Action (client→server) is returned without a version wrapper.
+  """
+  @spec to_map(t()) :: map()
+  def to_map(%CreateSurface{} = msg) do
+    wrap("createSurface", CreateSurface.to_map(msg))
+  end
+
+  def to_map(%UpdateComponents{} = msg) do
+    wrap("updateComponents", UpdateComponents.to_map(msg))
+  end
+
+  def to_map(%UpdateDataModel{} = msg) do
+    wrap("updateDataModel", UpdateDataModel.to_map(msg))
+  end
+
+  def to_map(%DeleteSurface{} = msg) do
+    wrap("deleteSurface", DeleteSurface.to_map(msg))
+  end
+
+  def to_map(%Action{} = msg), do: Action.to_map(msg)
+
+  @doc """
+  Converts a message struct to a JSON string.
+
+  Returns `{:ok, json}` or `{:error, reason}`.
+  """
+  @spec to_json(t()) :: {:ok, String.t()} | {:error, Jason.EncodeError.t()}
+  def to_json(msg) do
+    msg |> to_map() |> Jason.encode()
+  end
+
+  defp wrap(key, inner), do: %{"version" => "v0.9", key => inner}
 end

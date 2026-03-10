@@ -6,111 +6,87 @@ defmodule A2UI.Demo.Agent do
   Manages per-connection state and supports multiple simultaneous connections.
   """
 
-  use GenServer
+  use A2UI.Agent
 
   alias A2UI.Component
   alias A2UI.Protocol.Messages.{CreateSurface, UpdateComponents, UpdateDataModel}
 
-  # ── Client API ──
+  # ── Callbacks ──
 
-  def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, %{}, opts)
+  def init(_opts), do: {:ok, %{screens: %{}}}
+
+  @impl A2UI.Agent
+  def handle_connect(conn, state) do
+    send_booking_form(conn)
+    {:noreply, put_in(state, [:screens, conn], :booking)}
   end
 
-  # ── GenServer callbacks ──
+  @impl A2UI.Agent
+  def handle_action(action, conn, state) do
+    case action.name do
+      "submit_booking" ->
+        send_confirmation(conn, action.context)
+        {:noreply, put_in(state, [:screens, conn], :confirmation)}
 
-  @impl true
-  def init(_) do
-    {:ok, %{connections: %{}}}
-  end
-
-  @impl true
-  def handle_info({:a2ui_connect, pid}, state) do
-    Process.monitor(pid)
-    send_booking_form(pid)
-    {:noreply, put_in(state, [:connections, pid], :booking)}
-  end
-
-  def handle_info({:a2ui_action, action, metadata}, state) do
-    pid = Map.get(metadata, :liveview_pid)
-
-    case {action.name, pid} do
-      {_, nil} ->
-        {:noreply, state}
-
-      {"submit_booking", pid} ->
-        send_confirmation(pid, action.context)
-        {:noreply, update_screen(state, pid, :confirmation)}
-
-      {"new_reservation", pid} ->
-        send_reset(pid)
-        send_booking_form_components(pid)
-        {:noreply, update_screen(state, pid, :booking)}
+      "new_reservation" ->
+        send_reset(conn)
+        send_booking_form_components(conn)
+        {:noreply, put_in(state, [:screens, conn], :booking)}
 
       _ ->
         {:noreply, state}
     end
   end
 
-  def handle_info({:a2ui_disconnect, pid}, state) do
-    {:noreply, %{state | connections: Map.delete(state.connections, pid)}}
-  end
-
-  def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    {:noreply, %{state | connections: Map.delete(state.connections, pid)}}
+  @impl A2UI.Agent
+  def handle_disconnect(conn, state) do
+    {:noreply, %{state | screens: Map.delete(state.screens, conn)}}
   end
 
   # ── Private ──
 
-  defp update_screen(state, pid, screen) do
-    put_in(state, [:connections, pid], screen)
-  end
-
-  defp send_booking_form(pid) do
-    send(
-      pid,
-      {:a2ui_message,
-       %CreateSurface{
-         surface_id: "main",
-         send_data_model: true,
-         theme: %{primary_color: "#e65100"}
-       }}
+  defp send_booking_form(conn) do
+    A2UI.Agent.send_message(
+      conn,
+      %CreateSurface{
+        surface_id: "main",
+        send_data_model: true,
+        theme: %{primary_color: "#e65100"}
+      }
     )
 
-    send(
-      pid,
-      {:a2ui_message,
-       %UpdateDataModel{
-         surface_id: "main",
-         path: "/",
-         value: %{
-           "reservation" => %{
-             "name" => "",
-             "email" => "",
-             "date" => "",
-             "guests" => 2,
-             "dietary" => []
-           }
-         },
-         has_value: true
-       }}
+    A2UI.Agent.send_message(
+      conn,
+      %UpdateDataModel{
+        surface_id: "main",
+        path: "/",
+        value: %{
+          "reservation" => %{
+            "name" => "",
+            "email" => "",
+            "date" => "",
+            "guests" => 2,
+            "dietary" => []
+          }
+        },
+        has_value: true
+      }
     )
 
-    send_booking_form_components(pid)
+    send_booking_form_components(conn)
   end
 
-  defp send_booking_form_components(pid) do
-    send(
-      pid,
-      {:a2ui_message,
-       %UpdateComponents{
-         surface_id: "main",
-         components: booking_form_components()
-       }}
+  defp send_booking_form_components(conn) do
+    A2UI.Agent.send_message(
+      conn,
+      %UpdateComponents{
+        surface_id: "main",
+        components: booking_form_components()
+      }
     )
   end
 
-  defp send_confirmation(pid, context) do
+  defp send_confirmation(conn, context) do
     name = Map.get(context, "name", "Guest")
     email = Map.get(context, "email", "Not provided")
     date = Map.get(context, "date", "Not specified")
@@ -124,34 +100,32 @@ defmodule A2UI.Demo.Agent do
         other -> to_string(other)
       end
 
-    send(
-      pid,
-      {:a2ui_message,
-       %UpdateComponents{
-         surface_id: "main",
-         components: confirmation_components(name, email, date, guests, dietary_text)
-       }}
+    A2UI.Agent.send_message(
+      conn,
+      %UpdateComponents{
+        surface_id: "main",
+        components: confirmation_components(name, email, date, guests, dietary_text)
+      }
     )
   end
 
-  defp send_reset(pid) do
-    send(
-      pid,
-      {:a2ui_message,
-       %UpdateDataModel{
-         surface_id: "main",
-         path: "/",
-         value: %{
-           "reservation" => %{
-             "name" => "",
-             "email" => "",
-             "date" => "",
-             "guests" => 2,
-             "dietary" => []
-           }
-         },
-         has_value: true
-       }}
+  defp send_reset(conn) do
+    A2UI.Agent.send_message(
+      conn,
+      %UpdateDataModel{
+        surface_id: "main",
+        path: "/",
+        value: %{
+          "reservation" => %{
+            "name" => "",
+            "email" => "",
+            "date" => "",
+            "guests" => 2,
+            "dietary" => []
+          }
+        },
+        has_value: true
+      }
     )
   end
 

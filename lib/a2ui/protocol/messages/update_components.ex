@@ -27,4 +27,15 @@ defmodule A2UI.Protocol.Messages.UpdateComponents do
       components: components
     }
   end
+
+  @doc """
+  Converts an UpdateComponents struct back to a JSON-compatible map (inner object).
+  """
+  @spec to_map(t()) :: map()
+  def to_map(%__MODULE__{} = msg) do
+    %{
+      "surfaceId" => msg.surface_id,
+      "components" => Enum.map(msg.components, &Component.to_map/1)
+    }
+  end
 end

@@ -21,6 +21,7 @@ Agents send A2UI v0.9 JSONL messages describing components, and this library ren
 - **18 component types** — Text, Button, TextField, CheckBox, ChoicePicker, Slider, DateTimeInput, Image, Icon, Divider, Video, AudioPlayer, Row, Column, List, Card, Tabs, Modal
 - **Data binding** — two-way binding with JSON Pointer paths, resolved at render time
 - **LiveView macro** — `use A2UI.Live` injects mount hook, message handling, and event dispatch
+- **Agent macro** — `use A2UI.Agent` handles connection tracking, process monitoring, and message routing
 - **Transport abstraction** — `A2UI.Transport` behaviour with built-in local (process message) transport
 - **CSS classes** — BEM-style `a2ui-*` classes on all components for easy styling
 - **Demo app** — `mix a2ui.demo` launches a restaurant booking agent at `localhost:4002`
@@ -51,6 +52,29 @@ defmodule MyAppWeb.AgentLive do
   def handle_a2ui_action(action, metadata, socket) do
     A2UI.Transport.Local.send_action(socket.assigns.transport, action, metadata)
     {:noreply, socket}
+  end
+end
+```
+
+On the agent side, `use A2UI.Agent` handles the GenServer boilerplate:
+
+```elixir
+defmodule MyApp.Agent do
+  use A2UI.Agent
+
+  @impl A2UI.Agent
+  def handle_connect(conn, state) do
+    A2UI.Agent.send_message(conn, %A2UI.Protocol.Messages.CreateSurface{
+      surface_id: "main"
+    })
+    # send UpdateComponents, UpdateDataModel, etc.
+    {:noreply, state}
+  end
+
+  @impl A2UI.Agent
+  def handle_action(action, _conn, state) do
+    IO.inspect(action.name, label: "action")
+    {:noreply, state}
   end
 end
 ```

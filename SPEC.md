@@ -28,7 +28,7 @@ Features defined in the v0.9 spec but not yet implemented:
 
 These are not planned for this library:
 
-- **Agent logic** — use GenServer, `langchain`, etc.
+- **Agent logic** — `A2UI.Agent` provides connection/lifecycle scaffolding; business logic uses GenServer, `langchain`, etc.
 - **A2A protocol transport** — use `a2a-elixir` (separate library)
 - **Custom component catalogs** — renderers can be extended via
   `A2UI.ComponentRenderer` behaviour, but catalog hosting is not this

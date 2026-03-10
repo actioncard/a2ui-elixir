@@ -27,4 +27,15 @@ defmodule A2UI.Protocol.Messages.UpdateDataModel do
       has_value: Map.has_key?(map, "value")
     }
   end
+
+  @doc """
+  Converts an UpdateDataModel struct back to a JSON-compatible map (inner object).
+
+  Includes `"value"` only when `has_value` is true (absence signals delete).
+  """
+  @spec to_map(t()) :: map()
+  def to_map(%__MODULE__{} = msg) do
+    base = %{"surfaceId" => msg.surface_id, "path" => msg.path}
+    if msg.has_value, do: Map.put(base, "value", msg.value), else: base
+  end
 end

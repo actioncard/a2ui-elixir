@@ -123,6 +123,206 @@ defmodule A2UI.Protocol.MessagesTest do
     end
   end
 
+  describe "CreateSurface.to_map/1" do
+    test "round-trips full message" do
+      original = %CreateSurface{
+        surface_id: "main",
+        catalog_id: "test-catalog",
+        theme: %{
+          primary_color: "#1a73e8",
+          icon_url: "https://example.com/icon.png",
+          agent_display_name: "Agent"
+        },
+        send_data_model: true
+      }
+
+      assert original == original |> CreateSurface.to_map() |> CreateSurface.from_map()
+    end
+
+    test "omits theme when all nil and sendDataModel when false" do
+      msg = %CreateSurface{
+        surface_id: "s1",
+        catalog_id: "c1",
+        theme: %{primary_color: nil, icon_url: nil, agent_display_name: nil},
+        send_data_model: false
+      }
+
+      map = CreateSurface.to_map(msg)
+      refute Map.has_key?(map, "theme")
+      refute Map.has_key?(map, "sendDataModel")
+    end
+  end
+
+  describe "UpdateComponents.to_map/1" do
+    test "round-trips with multiple components" do
+      original = %UpdateComponents{
+        surface_id: "main",
+        components: [
+          %A2UI.Component{
+            id: "root",
+            type: "Column",
+            props: %{"children" => ["h1"]}
+          },
+          %A2UI.Component{
+            id: "h1",
+            type: "Text",
+            props: %{"text" => "Hello"}
+          }
+        ]
+      }
+
+      assert original ==
+               original |> UpdateComponents.to_map() |> UpdateComponents.from_map()
+    end
+  end
+
+  describe "UpdateDataModel.to_map/1" do
+    test "round-trips with value (set)" do
+      original = %UpdateDataModel{
+        surface_id: "main",
+        path: "/name",
+        value: "Alice",
+        has_value: true
+      }
+
+      assert original ==
+               original |> UpdateDataModel.to_map() |> UpdateDataModel.from_map()
+    end
+
+    test "round-trips without value (delete)" do
+      original = %UpdateDataModel{
+        surface_id: "main",
+        path: "/name",
+        value: nil,
+        has_value: false
+      }
+
+      result = original |> UpdateDataModel.to_map() |> UpdateDataModel.from_map()
+      assert result == original
+      refute Map.has_key?(UpdateDataModel.to_map(original), "value")
+    end
+  end
+
+  describe "DeleteSurface.to_map/1" do
+    test "round-trips" do
+      original = %DeleteSurface{surface_id: "main"}
+
+      assert original ==
+               original |> DeleteSurface.to_map() |> DeleteSurface.from_map()
+    end
+  end
+
+  describe "Action.to_map/1" do
+    test "round-trips full action" do
+      original = %Action{
+        name: "submit",
+        surface_id: "main",
+        source_component_id: "btn",
+        timestamp: "2025-12-15T10:30:00Z",
+        context: %{"key" => "val"}
+      }
+
+      assert original == original |> Action.to_map() |> Action.from_map()
+    end
+
+    test "omits timestamp when nil and context when empty" do
+      msg = %Action{
+        name: "submit",
+        surface_id: "main",
+        source_component_id: "btn",
+        timestamp: nil,
+        context: %{}
+      }
+
+      map = Action.to_map(msg)
+      refute Map.has_key?(map, "timestamp")
+      refute Map.has_key?(map, "context")
+    end
+  end
+
+  describe "Message.to_map/1" do
+    test "wraps server messages with version" do
+      msg = %CreateSurface{
+        surface_id: "s1",
+        catalog_id: "c1",
+        theme: %{primary_color: nil, icon_url: nil, agent_display_name: nil}
+      }
+
+      map = Message.to_map(msg)
+      assert map["version"] == "v0.9"
+      assert map["createSurface"]["surfaceId"] == "s1"
+    end
+
+    test "does not wrap Action with version" do
+      msg = %Action{
+        name: "x",
+        surface_id: "s1",
+        source_component_id: "c1"
+      }
+
+      map = Message.to_map(msg)
+      refute Map.has_key?(map, "version")
+      assert map["name"] == "x"
+    end
+
+    test "full round-trip through Message dispatcher" do
+      msgs = [
+        %CreateSurface{
+          surface_id: "s1",
+          catalog_id: "c1",
+          theme: %{
+            primary_color: "#fff",
+            icon_url: nil,
+            agent_display_name: nil
+          },
+          send_data_model: true
+        },
+        %UpdateComponents{
+          surface_id: "s1",
+          components: [
+            %A2UI.Component{id: "r", type: "Row", props: %{}}
+          ]
+        },
+        %UpdateDataModel{
+          surface_id: "s1",
+          path: "/x",
+          value: 42,
+          has_value: true
+        },
+        %DeleteSurface{surface_id: "s1"},
+        %Action{
+          name: "go",
+          surface_id: "s1",
+          source_component_id: "btn",
+          timestamp: "2025-01-01T00:00:00Z",
+          context: %{"a" => 1}
+        }
+      ]
+
+      for original <- msgs do
+        assert {:ok, ^original} =
+                 original |> Message.to_map() |> Message.from_map()
+      end
+    end
+  end
+
+  describe "Message.to_json/1" do
+    test "encode and decode round-trip" do
+      original = %CreateSurface{
+        surface_id: "s1",
+        catalog_id: "c1",
+        theme: %{
+          primary_color: nil,
+          icon_url: nil,
+          agent_display_name: nil
+        }
+      }
+
+      assert {:ok, json} = Message.to_json(original)
+      assert {:ok, ^original} = Message.from_json(json)
+    end
+  end
+
   describe "error handling" do
     test "unknown version" do
       assert {:error, "unsupported protocol version: v0.1"} =

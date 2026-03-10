@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `A2UI.Agent` behaviour and `use A2UI.Agent` macro for building agents with minimal boilerplate
+- `A2UI.Agent.send_message/2` and `send_messages/2` helpers
+
+### Changed
+
+- Demo agent refactored to use `A2UI.Agent` behaviour
+
 ## [0.1.0] - 2026-03-06
 
 ### Added
