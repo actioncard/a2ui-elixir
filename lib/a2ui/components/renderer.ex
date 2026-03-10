@@ -233,6 +233,7 @@ defmodule A2UI.Components.Renderer do
   def input_attrs(path, surface_id) do
     %{
       "phx-change" => "a2ui_input_change",
+      "phx-submit" => "a2ui_form_submit",
       "phx-value-path" => path,
       "phx-value-surface-id" => surface_id
     }
@@ -248,6 +249,7 @@ defmodule A2UI.Components.Renderer do
   def input_attrs(path, surface_id, input_type) do
     %{
       "phx-change" => "a2ui_input_change",
+      "phx-submit" => "a2ui_form_submit",
       "phx-value-path" => path,
       "phx-value-surface-id" => surface_id,
       "phx-value-input-type" => input_type

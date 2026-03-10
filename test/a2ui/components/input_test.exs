@@ -26,6 +26,7 @@ defmodule A2UI.Components.InputTest do
       assert html =~ ~s(type="text")
       assert html =~ ~s(value="Alice")
       assert html =~ ~s(phx-change="a2ui_input_change")
+      assert html =~ ~s(phx-submit="a2ui_form_submit")
       assert html =~ ~s(phx-value-path="/name")
       assert html =~ ~s(phx-value-surface-id="s1")
     end
@@ -176,6 +177,7 @@ defmodule A2UI.Components.InputTest do
       assert html =~ "Agree to terms"
       assert html =~ "checked"
       assert html =~ ~s(phx-change="a2ui_input_change")
+      assert html =~ ~s(phx-submit="a2ui_form_submit")
     end
 
     test "renders unchecked when false" do
@@ -219,6 +221,7 @@ defmodule A2UI.Components.InputTest do
       assert html =~ ~s(type="radio")
       assert html =~ "Red"
       assert html =~ "Blue"
+      assert html =~ ~s(phx-submit="a2ui_form_submit")
     end
 
     test "renders checkboxes for multi selection" do
@@ -276,6 +279,7 @@ defmodule A2UI.Components.InputTest do
       assert html =~ ~s(max="100")
       assert html =~ ~s(value="75")
       assert html =~ ~s(phx-change="a2ui_input_change")
+      assert html =~ ~s(phx-submit="a2ui_form_submit")
     end
 
     test "uses default min/max" do
@@ -308,6 +312,7 @@ defmodule A2UI.Components.InputTest do
       assert html =~ ~s(type="date")
       assert html =~ ~s(value="2025-12-15")
       assert html =~ "Date"
+      assert html =~ ~s(phx-submit="a2ui_form_submit")
     end
 
     test "renders time input when enableTime only" do

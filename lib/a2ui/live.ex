@@ -61,6 +61,10 @@ defmodule A2UI.Live do
         A2UI.Live.__handle_input_change__(params, socket)
       end
 
+      def handle_event("a2ui_form_submit", _params, socket) do
+        {:noreply, socket}
+      end
+
       @impl A2UI.Live
       def handle_a2ui_action(_action, _metadata, socket) do
         Logger.warning("Unhandled A2UI action — override handle_a2ui_action/3")
