@@ -12,5 +12,7 @@ defmodule A2UI.Transport do
   @callback connect(opts :: keyword()) :: {:ok, t()} | {:error, any()}
   @callback send_action(t(), A2UI.Protocol.Messages.Action.t(), metadata :: map()) ::
               :ok | {:error, any()}
+  @callback send_error(t(), A2UI.Protocol.Messages.Error.t(), metadata :: map()) ::
+              :ok | {:error, any()}
   @callback disconnect(t()) :: :ok
 end

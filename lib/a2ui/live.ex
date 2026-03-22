@@ -39,9 +39,17 @@ defmodule A2UI.Live do
               socket :: Phoenix.LiveView.Socket.t()
             ) :: {:noreply, Phoenix.LiveView.Socket.t()}
 
+  @callback handle_a2ui_error(
+              error :: A2UI.Protocol.Messages.Error.t(),
+              metadata :: map(),
+              socket :: Phoenix.LiveView.Socket.t()
+            ) :: {:noreply, Phoenix.LiveView.Socket.t()}
+
   defmacro __using__(_opts) do
     quote do
       @behaviour A2UI.Live
+
+      require Logger
 
       import A2UI.Components.Renderer, only: [surface: 1]
 
@@ -61,6 +69,10 @@ defmodule A2UI.Live do
         A2UI.Live.__handle_input_change__(params, socket)
       end
 
+      def handle_event("a2ui_error", params, socket) do
+        A2UI.Live.__handle_error__(params, socket, &handle_a2ui_error/3)
+      end
+
       def handle_event("a2ui_form_submit", _params, socket) do
         {:noreply, socket}
       end
@@ -71,7 +83,16 @@ defmodule A2UI.Live do
         {:noreply, socket}
       end
 
-      defoverridable handle_a2ui_action: 3, handle_info: 2, handle_event: 3
+      @impl A2UI.Live
+      def handle_a2ui_error(_error, _metadata, socket) do
+        Logger.warning("Unhandled A2UI error — override handle_a2ui_error/3")
+        {:noreply, socket}
+      end
+
+      defoverridable handle_a2ui_action: 3,
+                     handle_a2ui_error: 3,
+                     handle_info: 2,
+                     handle_event: 3
     end
   end
 
@@ -99,6 +120,18 @@ defmodule A2UI.Live do
 
       {:error, reason} ->
         Logger.error("A2UI action error: #{inspect(reason)}")
+        {:noreply, socket}
+    end
+  end
+
+  @doc false
+  def __handle_error__(params, socket, callback) do
+    case EventHandler.build_error(params) do
+      {:ok, error, metadata} ->
+        callback.(error, metadata, socket)
+
+      {:error, reason} ->
+        Logger.error("A2UI error handling error: #{inspect(reason)}")
         {:noreply, socket}
     end
   end

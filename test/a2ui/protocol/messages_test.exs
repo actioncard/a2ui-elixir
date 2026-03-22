@@ -7,6 +7,7 @@ defmodule A2UI.Protocol.MessagesTest do
     Action,
     CreateSurface,
     DeleteSurface,
+    Error,
     UpdateComponents,
     UpdateDataModel
   }
@@ -120,6 +121,24 @@ defmodule A2UI.Protocol.MessagesTest do
       assert msg.source_component_id == "submit-btn"
       assert msg.timestamp == "2025-12-15T10:30:00Z"
       assert msg.context == %{"date" => "2025-12-15"}
+    end
+  end
+
+  describe "Error" do
+    test "parses client error" do
+      {:ok, msg} =
+        Message.from_map(%{
+          "code" => "VALIDATION_FAILED",
+          "surfaceId" => "main",
+          "path" => "/reservation/name",
+          "message" => "Name is required"
+        })
+
+      assert %Error{} = msg
+      assert msg.code == "VALIDATION_FAILED"
+      assert msg.surface_id == "main"
+      assert msg.path == "/reservation/name"
+      assert msg.message == "Name is required"
     end
   end
 
@@ -240,6 +259,19 @@ defmodule A2UI.Protocol.MessagesTest do
     end
   end
 
+  describe "Error.to_map/1" do
+    test "round-trips" do
+      original = %Error{
+        code: "VALIDATION_FAILED",
+        surface_id: "main",
+        path: "/name",
+        message: "Required field"
+      }
+
+      assert original == original |> Error.to_map() |> Error.from_map()
+    end
+  end
+
   describe "Message.to_map/1" do
     test "wraps server messages with version" do
       msg = %CreateSurface{
@@ -263,6 +295,19 @@ defmodule A2UI.Protocol.MessagesTest do
       map = Message.to_map(msg)
       refute Map.has_key?(map, "version")
       assert map["name"] == "x"
+    end
+
+    test "does not wrap Error with version" do
+      msg = %Error{
+        code: "VALIDATION_FAILED",
+        surface_id: "s1",
+        path: "/name",
+        message: "Required"
+      }
+
+      map = Message.to_map(msg)
+      refute Map.has_key?(map, "version")
+      assert map["code"] == "VALIDATION_FAILED"
     end
 
     test "full round-trip through Message dispatcher" do
@@ -296,6 +341,12 @@ defmodule A2UI.Protocol.MessagesTest do
           source_component_id: "btn",
           timestamp: "2025-01-01T00:00:00Z",
           context: %{"a" => 1}
+        },
+        %Error{
+          code: "VALIDATION_FAILED",
+          surface_id: "s1",
+          path: "/name",
+          message: "Required"
         }
       ]
 

@@ -43,9 +43,10 @@ defmodule A2UI.Agent do
 
   @callback handle_connect(conn, state) :: {:noreply, state}
   @callback handle_action(A2UI.Protocol.Messages.Action.t(), conn, state) :: {:noreply, state}
+  @callback handle_error(A2UI.Protocol.Messages.Error.t(), conn, state) :: {:noreply, state}
   @callback handle_disconnect(conn, state) :: {:noreply, state}
 
-  @optional_callbacks [handle_disconnect: 2]
+  @optional_callbacks [handle_disconnect: 2, handle_error: 3]
 
   defmodule State do
     @moduledoc false
@@ -75,11 +76,18 @@ defmodule A2UI.Agent do
       def init(_opts), do: {:ok, nil}
 
       @impl A2UI.Agent
+      def handle_error(_error, _conn, state), do: {:noreply, state}
+
+      @impl A2UI.Agent
       def handle_disconnect(_conn, state), do: {:noreply, state}
 
       def handle_info(_msg, state), do: {:noreply, state}
 
-      defoverridable start_link: 1, init: 1, handle_disconnect: 2, handle_info: 2
+      defoverridable start_link: 1,
+                     init: 1,
+                     handle_error: 3,
+                     handle_disconnect: 2,
+                     handle_info: 2
     end
   end
 
@@ -152,6 +160,19 @@ defmodule A2UI.Agent do
 
     if pid do
       case module.handle_action(action, pid, state.agent_state) do
+        {:noreply, agent_state} ->
+          {:noreply, %{state | agent_state: agent_state}}
+      end
+    else
+      {:noreply, state}
+    end
+  end
+
+  def __handle_info__(module, _super_fn, {:a2ui_error, error, metadata}, %State{} = state) do
+    pid = Map.get(metadata, :liveview_pid)
+
+    if pid do
+      case module.handle_error(error, pid, state.agent_state) do
         {:noreply, agent_state} ->
           {:noreply, %{state | agent_state: agent_state}}
       end

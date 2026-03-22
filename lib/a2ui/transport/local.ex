@@ -30,6 +30,12 @@ defmodule A2UI.Transport.Local do
   end
 
   @impl true
+  def send_error(%__MODULE__{agent: agent}, error, metadata) do
+    send(agent, {:a2ui_error, error, metadata})
+    :ok
+  end
+
+  @impl true
   def disconnect(%__MODULE__{agent: agent, liveview: liveview}) do
     send(agent, {:a2ui_disconnect, liveview})
     :ok

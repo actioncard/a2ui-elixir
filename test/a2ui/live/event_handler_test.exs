@@ -272,6 +272,46 @@ defmodule A2UI.Live.EventHandlerTest do
     end
   end
 
+  # ── build_error ──
+
+  describe "build_error/1" do
+    test "happy path builds error struct" do
+      params = %{
+        "code" => "VALIDATION_FAILED",
+        "surface-id" => "s1",
+        "path" => "/name",
+        "message" => "Required"
+      }
+
+      assert {:ok, error, metadata} = EventHandler.build_error(params)
+      assert error.code == "VALIDATION_FAILED"
+      assert error.surface_id == "s1"
+      assert error.path == "/name"
+      assert error.message == "Required"
+      assert is_map(metadata)
+    end
+
+    test "returns error on missing code" do
+      params = %{"surface-id" => "s1", "path" => "/name", "message" => "Required"}
+      assert {:error, :missing_param} = EventHandler.build_error(params)
+    end
+
+    test "returns error on missing surface-id" do
+      params = %{"code" => "VALIDATION_FAILED", "path" => "/name", "message" => "Required"}
+      assert {:error, :missing_param} = EventHandler.build_error(params)
+    end
+
+    test "returns error on missing path" do
+      params = %{"code" => "VALIDATION_FAILED", "surface-id" => "s1", "message" => "Required"}
+      assert {:error, :missing_param} = EventHandler.build_error(params)
+    end
+
+    test "returns error on missing message" do
+      params = %{"code" => "VALIDATION_FAILED", "surface-id" => "s1", "path" => "/name"}
+      assert {:error, :missing_param} = EventHandler.build_error(params)
+    end
+  end
+
   describe "apply_input_change/2 - error cases" do
     test "returns error on missing surface" do
       params = %{"surface-id" => "unknown", "path" => "/x", "_target" => ["f"], "f" => "v"}
