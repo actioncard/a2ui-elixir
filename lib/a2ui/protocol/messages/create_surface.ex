@@ -7,7 +7,7 @@ defmodule A2UI.Protocol.Messages.CreateSurface do
 
   @type t :: %__MODULE__{
           surface_id: String.t(),
-          catalog_id: String.t(),
+          catalog_id: String.t() | nil,
           theme: map(),
           send_data_model: boolean()
         }
@@ -21,7 +21,7 @@ defmodule A2UI.Protocol.Messages.CreateSurface do
 
     %__MODULE__{
       surface_id: Map.fetch!(map, "surfaceId"),
-      catalog_id: Map.fetch!(map, "catalogId"),
+      catalog_id: Map.get(map, "catalogId"),
       theme: %{
         primary_color: theme["primaryColor"],
         icon_url: theme["iconUrl"],
@@ -38,7 +38,8 @@ defmodule A2UI.Protocol.Messages.CreateSurface do
   """
   @spec to_map(t()) :: map()
   def to_map(%__MODULE__{} = msg) do
-    base = %{"surfaceId" => msg.surface_id, "catalogId" => msg.catalog_id}
+    base = %{"surfaceId" => msg.surface_id}
+    base = if msg.catalog_id, do: Map.put(base, "catalogId", msg.catalog_id), else: base
 
     base =
       case theme_to_map(msg.theme) do

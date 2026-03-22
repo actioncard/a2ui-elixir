@@ -49,19 +49,47 @@ defmodule A2UI.SurfaceManagerTest do
     test "is idempotent — replaces existing surface" do
       surfaces = setup_surface()
 
-      # Apply create again with different catalog
+      # Apply create again with nil catalog
       msg = %CreateSurface{
         surface_id: "main",
-        catalog_id: "other-catalog",
+        catalog_id: nil,
         theme: %{},
         send_data_model: true
       }
 
       {:ok, surfaces} = SurfaceManager.apply_message(surfaces, msg)
-      assert surfaces["main"].catalog_id == "other-catalog"
+      assert surfaces["main"].catalog_id == nil
       assert surfaces["main"].send_data_model == true
       # Components should be reset
       assert surfaces["main"].components == %{}
+    end
+
+    test "succeeds with nil catalog_id" do
+      surfaces = SurfaceManager.new()
+
+      msg = %CreateSurface{
+        surface_id: "main",
+        catalog_id: nil,
+        theme: %{},
+        send_data_model: false
+      }
+
+      {:ok, surfaces} = SurfaceManager.apply_message(surfaces, msg)
+      assert surfaces["main"].catalog_id == nil
+    end
+
+    test "accepts unknown catalog_id (permissive)" do
+      surfaces = SurfaceManager.new()
+
+      msg = %CreateSurface{
+        surface_id: "main",
+        catalog_id: "https://example.com/custom_catalog.json",
+        theme: %{},
+        send_data_model: false
+      }
+
+      {:ok, surfaces} = SurfaceManager.apply_message(surfaces, msg)
+      assert surfaces["main"].catalog_id == "https://example.com/custom_catalog.json"
     end
 
     test "multiple surfaces" do
@@ -138,6 +166,66 @@ defmodule A2UI.SurfaceManagerTest do
       {:ok, surfaces} = SurfaceManager.apply_message(surfaces, msg2)
 
       assert surfaces["main"].components["header"].props["text"] == "new"
+    end
+
+    test "rejects components with invalid types for catalog" do
+      surfaces = setup_surface()
+
+      msg = %UpdateComponents{
+        surface_id: "main",
+        components: [
+          %Component{id: "ok", type: "Text", props: %{}},
+          %Component{id: "bad", type: "FancyWidget", props: %{}}
+        ]
+      }
+
+      assert {:error, {:invalid_component_types, ["FancyWidget"]}} =
+               SurfaceManager.apply_message(surfaces, msg)
+
+      # No components should have been added
+      assert surfaces["main"].components == %{}
+    end
+
+    test "accepts any types when catalog_id is nil" do
+      surfaces = SurfaceManager.new()
+
+      create = %CreateSurface{
+        surface_id: "main",
+        catalog_id: nil,
+        theme: %{},
+        send_data_model: false
+      }
+
+      {:ok, surfaces} = SurfaceManager.apply_message(surfaces, create)
+
+      msg = %UpdateComponents{
+        surface_id: "main",
+        components: [%Component{id: "x", type: "Anything", props: %{}}]
+      }
+
+      {:ok, surfaces} = SurfaceManager.apply_message(surfaces, msg)
+      assert surfaces["main"].components["x"].type == "Anything"
+    end
+
+    test "accepts any types when catalog_id is unknown (permissive)" do
+      surfaces = SurfaceManager.new()
+
+      create = %CreateSurface{
+        surface_id: "main",
+        catalog_id: "https://example.com/custom_catalog.json",
+        theme: %{},
+        send_data_model: false
+      }
+
+      {:ok, surfaces} = SurfaceManager.apply_message(surfaces, create)
+
+      msg = %UpdateComponents{
+        surface_id: "main",
+        components: [%Component{id: "x", type: "CustomWidget", props: %{}}]
+      }
+
+      {:ok, surfaces} = SurfaceManager.apply_message(surfaces, msg)
+      assert surfaces["main"].components["x"].type == "CustomWidget"
     end
 
     test "errors when surface not found" do

@@ -19,7 +19,7 @@ defmodule A2UI.Surface do
 
   @type t :: %__MODULE__{
           id: String.t(),
-          catalog_id: String.t(),
+          catalog_id: String.t() | nil,
           theme: map(),
           send_data_model: boolean(),
           components: %{String.t() => A2UI.Component.t()},

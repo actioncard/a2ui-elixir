@@ -47,7 +47,7 @@ defmodule A2UI.Test.ComponentHelpers do
 
     %Surface{
       id: id,
-      catalog_id: "basic",
+      catalog_id: Keyword.get(opts, :catalog_id),
       components: components,
       data_model: DataModel.new(data),
       theme: theme

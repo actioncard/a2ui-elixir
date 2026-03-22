@@ -50,6 +50,7 @@ defmodule A2UI.Demo.Agent do
       conn,
       %CreateSurface{
         surface_id: "main",
+        catalog_id: A2UI.Catalog.basic_catalog_id(),
         send_data_model: true,
         theme: %{primary_color: "#e65100"}
       }
