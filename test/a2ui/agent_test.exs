@@ -1,7 +1,7 @@
 defmodule A2UI.AgentTest do
   use ExUnit.Case, async: true
 
-  alias A2UI.Protocol.Messages.Action
+  alias A2UI.Protocol.Messages.{Action, Error}
 
   defmodule TestAgent do
     @moduledoc false
@@ -21,6 +21,12 @@ defmodule A2UI.AgentTest do
     def handle_action(action, conn, state) do
       notify(state, {:action, action.name, conn})
       {:noreply, %{state | events: [{:action, action.name, conn} | state.events]}}
+    end
+
+    @impl A2UI.Agent
+    def handle_error(error, conn, state) do
+      notify(state, {:error, error.code, conn})
+      {:noreply, %{state | events: [{:error, error.code, conn} | state.events]}}
     end
 
     @impl A2UI.Agent
@@ -132,6 +138,40 @@ defmodule A2UI.AgentTest do
     end
   end
 
+  describe "handle_error" do
+    test "routes error with liveview_pid metadata" do
+      {:ok, agent} = TestAgent.start_link(test_pid: self())
+      send(agent, {:a2ui_connect, self()})
+      assert_receive {:connected, _}
+
+      error = %Error{
+        code: "VALIDATION_FAILED",
+        surface_id: "main",
+        path: "/name",
+        message: "Required"
+      }
+
+      send(agent, {:a2ui_error, error, %{liveview_pid: self()}})
+      assert_receive {:error, "VALIDATION_FAILED", pid} when pid == self()
+      GenServer.stop(agent)
+    end
+
+    test "silently ignores error with nil pid" do
+      {:ok, agent} = TestAgent.start_link(test_pid: self())
+
+      error = %Error{
+        code: "VALIDATION_FAILED",
+        surface_id: "main",
+        path: "/name",
+        message: "Required"
+      }
+
+      send(agent, {:a2ui_error, error, %{}})
+      refute_receive {:error, _, _}, 50
+      GenServer.stop(agent)
+    end
+  end
+
   describe "handle_disconnect" do
     test "fires on explicit disconnect" do
       {:ok, agent} = TestAgent.start_link(test_pid: self())
@@ -166,6 +206,26 @@ defmodule A2UI.AgentTest do
 
       send(agent, {:DOWN, make_ref(), :process, self(), :normal})
       refute_receive {:disconnected, _}, 50
+      GenServer.stop(agent)
+    end
+  end
+
+  describe "default handle_error" do
+    test "minimal agent without handle_error does not crash" do
+      {:ok, agent} = MinimalAgent.start_link(test_pid: self())
+      send(agent, {:a2ui_connect, self()})
+      assert_receive {:connected, _}
+
+      error = %Error{
+        code: "VALIDATION_FAILED",
+        surface_id: "main",
+        path: "/name",
+        message: "Required"
+      }
+
+      send(agent, {:a2ui_error, error, %{liveview_pid: self()}})
+      :timer.sleep(50)
+      assert Process.alive?(agent)
       GenServer.stop(agent)
     end
   end

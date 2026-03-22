@@ -10,6 +10,7 @@ defmodule A2UI.Protocol.Message do
     Action,
     CreateSurface,
     DeleteSurface,
+    Error,
     UpdateComponents,
     UpdateDataModel
   }
@@ -20,6 +21,7 @@ defmodule A2UI.Protocol.Message do
           | UpdateDataModel.t()
           | DeleteSurface.t()
           | Action.t()
+          | Error.t()
 
   @doc """
   Parses a decoded JSON map into the appropriate message struct.
@@ -52,6 +54,11 @@ defmodule A2UI.Protocol.Message do
   # Client → server action (no version field)
   def from_map(%{"name" => _, "surfaceId" => _} = map) do
     {:ok, Action.from_map(map)}
+  end
+
+  # Client → server error (no version field)
+  def from_map(%{"code" => _, "surfaceId" => _, "path" => _, "message" => _} = map) do
+    {:ok, Error.from_map(map)}
   end
 
   def from_map(%{"version" => version}) do
@@ -100,6 +107,7 @@ defmodule A2UI.Protocol.Message do
   end
 
   def to_map(%Action{} = msg), do: Action.to_map(msg)
+  def to_map(%Error{} = msg), do: Error.to_map(msg)
 
   @doc """
   Converts a message struct to a JSON string.

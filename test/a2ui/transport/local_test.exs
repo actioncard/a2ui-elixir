@@ -2,7 +2,7 @@ defmodule A2UI.Transport.LocalTest do
   use ExUnit.Case, async: true
 
   alias A2UI.Transport.Local
-  alias A2UI.Protocol.Messages.Action
+  alias A2UI.Protocol.Messages.{Action, Error}
 
   test "connect sends {:a2ui_connect, pid} to agent" do
     agent = self()
@@ -24,6 +24,24 @@ defmodule A2UI.Transport.LocalTest do
 
     assert :ok = Local.send_action(transport, action, metadata)
     assert_received {:a2ui_action, ^action, ^metadata}
+  end
+
+  test "send_error sends {:a2ui_error, error, metadata} to agent" do
+    agent = self()
+    {:ok, transport} = Local.connect(agent: agent)
+    assert_received {:a2ui_connect, _}
+
+    error = %Error{
+      code: "VALIDATION_FAILED",
+      surface_id: "s1",
+      path: "/name",
+      message: "Required"
+    }
+
+    metadata = %{foo: "bar"}
+
+    assert :ok = Local.send_error(transport, error, metadata)
+    assert_received {:a2ui_error, ^error, ^metadata}
   end
 
   test "disconnect sends {:a2ui_disconnect, pid} to agent" do

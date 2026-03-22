@@ -8,7 +8,7 @@ defmodule A2UI.Live.EventHandler do
 
   alias A2UI.DataModel
   alias A2UI.DataModel.Binding
-  alias A2UI.Protocol.Messages.{Action, UpdateDataModel}
+  alias A2UI.Protocol.Messages.{Action, Error, UpdateDataModel}
   alias A2UI.SurfaceManager
 
   @doc """
@@ -77,6 +77,28 @@ defmodule A2UI.Live.EventHandler do
       }
 
       SurfaceManager.apply_message(surfaces, msg)
+    end
+  end
+
+  @doc """
+  Builds an Error struct from `a2ui_error` event params.
+
+  Returns `{:ok, error, metadata}` or `{:error, reason}`.
+  """
+  @spec build_error(map()) :: {:ok, Error.t(), map()} | {:error, atom()}
+  def build_error(params) do
+    with {:ok, code} <- fetch_param(params, "code"),
+         {:ok, surface_id} <- fetch_param(params, "surface-id"),
+         {:ok, path} <- fetch_param(params, "path"),
+         {:ok, message} <- fetch_param(params, "message") do
+      error = %Error{
+        code: code,
+        surface_id: surface_id,
+        path: path,
+        message: message
+      }
+
+      {:ok, error, %{}}
     end
   end
 
