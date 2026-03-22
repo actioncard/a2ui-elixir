@@ -6,7 +6,7 @@ defmodule A2UI.SurfaceManager do
   No GenServer — surfaces live in LiveView assigns.
   """
 
-  alias A2UI.{DataModel, Surface}
+  alias A2UI.{Catalog, DataModel, Surface}
 
   alias A2UI.Protocol.Messages.{
     CreateSurface,
@@ -43,7 +43,8 @@ defmodule A2UI.SurfaceManager do
   end
 
   def apply_message(surfaces, %UpdateComponents{} = msg) do
-    with {:ok, surface} <- fetch_surface(surfaces, msg.surface_id) do
+    with {:ok, surface} <- fetch_surface(surfaces, msg.surface_id),
+         :ok <- Catalog.validate_types(msg.components, surface.catalog_id) do
       updated_components =
         Enum.reduce(msg.components, surface.components, fn component, acc ->
           Map.put(acc, component.id, component)
