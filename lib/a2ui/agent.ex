@@ -38,6 +38,8 @@ defmodule A2UI.Agent do
   - `handle_info/2` — called for any non-A2UI messages
   """
 
+  require Logger
+
   alias A2UI.Connection
 
   @type conn :: Connection.t()
@@ -171,6 +173,7 @@ defmodule A2UI.Agent do
           {:noreply, %{state | agent_state: agent_state}}
       end
     else
+      Logger.warning("#{inspect(module)} received :a2ui_action without :connection in metadata")
       {:noreply, state}
     end
   end
@@ -184,6 +187,7 @@ defmodule A2UI.Agent do
           {:noreply, %{state | agent_state: agent_state}}
       end
     else
+      Logger.warning("#{inspect(module)} received :a2ui_error without :connection in metadata")
       {:noreply, state}
     end
   end
