@@ -5,9 +5,9 @@ defmodule A2UI.Demo.DemoLive do
   def mount(_params, _session, socket) do
     if connected?(socket) do
       {:ok, transport} = A2UI.Transport.Local.connect(agent: A2UI.Demo.Agent)
-      {:ok, assign(socket, transport: transport)}
+      {:ok, assign(socket, a2ui_transport: transport)}
     else
-      {:ok, assign(socket, transport: nil)}
+      {:ok, assign(socket, a2ui_transport: nil)}
     end
   end
 
@@ -22,8 +22,7 @@ defmodule A2UI.Demo.DemoLive do
 
   @impl A2UI.Live
   def handle_a2ui_action(action, metadata, socket) do
-    metadata = Map.put(metadata, :liveview_pid, self())
-    A2UI.Transport.Local.send_action(socket.assigns.transport, action, metadata)
+    A2UI.Transport.send_action(socket.assigns.a2ui_transport, action, metadata)
     {:noreply, socket}
   end
 end

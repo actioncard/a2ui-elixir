@@ -3,7 +3,7 @@ defmodule A2UI.Agent do
   Behaviour and macro for building A2UI agents.
 
   `use A2UI.Agent` eliminates GenServer boilerplate for agents that serve A2UI
-  protocol messages to connected LiveViews. Agents implement only the callbacks
+  protocol messages to connected clients. Agents implement only the callbacks
   that matter: `init/1`, `handle_connect/2`, and `handle_action/3`.
 
   ## Example
@@ -30,15 +30,17 @@ defmodule A2UI.Agent do
 
   Required:
   - `init/1` — receives keyword opts, returns `{:ok, state}` or `{:stop, reason}`
-  - `handle_connect/2` — called when a LiveView connects
+  - `handle_connect/2` — called when a client connects
   - `handle_action/3` — called when a user triggers an action
 
   Optional (default no-op):
-  - `handle_disconnect/2` — called when a LiveView disconnects or its process dies
+  - `handle_disconnect/2` — called when a client disconnects or its process dies
   - `handle_info/2` — called for any non-A2UI messages
   """
 
-  @type conn :: pid()
+  alias A2UI.Connection
+
+  @type conn :: Connection.t()
   @type state :: term()
 
   @callback handle_connect(conn, state) :: {:noreply, state}
@@ -50,7 +52,7 @@ defmodule A2UI.Agent do
 
   defmodule State do
     @moduledoc false
-    defstruct connections: MapSet.new(), agent_state: nil
+    defstruct connections: %{}, agent_state: nil
   end
 
   defmacro __using__(_opts) do
@@ -114,20 +116,25 @@ defmodule A2UI.Agent do
   # -- Helper functions --
 
   @doc """
-  Sends a single A2UI protocol message to a connected LiveView.
+  Sends a single A2UI protocol message to a connected client.
+
+  Dispatches through the connection's transport module.
   """
-  @spec send_message(conn, struct()) :: :ok when conn: pid()
-  def send_message(conn, message) do
-    send(conn, {:a2ui_message, message})
-    :ok
+  @spec send_message(conn, struct()) :: :ok | {:error, any()} when conn: Connection.t()
+  def send_message(%Connection{transport: transport, ref: ref}, message) do
+    transport.deliver_message(ref, message)
   end
 
   @doc """
-  Sends a list of A2UI protocol messages to a connected LiveView.
+  Sends a list of A2UI protocol messages to a connected client.
+
+  Dispatches through the connection's transport module. This is a
+  fire-and-forget operation — individual delivery failures are silently
+  ignored. Use `send_message/2` for per-message error handling.
   """
-  @spec send_messages(conn, [struct()]) :: :ok when conn: pid()
-  def send_messages(conn, messages) do
-    Enum.each(messages, fn msg -> send(conn, {:a2ui_message, msg}) end)
+  @spec send_messages(conn, [struct()]) :: :ok when conn: Connection.t()
+  def send_messages(%Connection{} = conn, messages) do
+    Enum.each(messages, fn msg -> send_message(conn, msg) end)
     :ok
   end
 
@@ -145,21 +152,21 @@ defmodule A2UI.Agent do
   end
 
   @doc false
-  def __handle_info__(module, _super_fn, {:a2ui_connect, pid}, %State{} = state) do
-    Process.monitor(pid)
-    connections = MapSet.put(state.connections, pid)
+  def __handle_info__(module, _super_fn, {:a2ui_connect, %Connection{} = conn}, %State{} = state) do
+    ref = Process.monitor(conn.pid)
+    connections = Map.put(state.connections, conn.id, {conn, ref})
 
-    case module.handle_connect(pid, state.agent_state) do
+    case module.handle_connect(conn, state.agent_state) do
       {:noreply, agent_state} ->
         {:noreply, %{state | connections: connections, agent_state: agent_state}}
     end
   end
 
   def __handle_info__(module, _super_fn, {:a2ui_action, action, metadata}, %State{} = state) do
-    pid = Map.get(metadata, :liveview_pid)
+    conn = Map.get(metadata, :connection)
 
-    if pid do
-      case module.handle_action(action, pid, state.agent_state) do
+    if conn do
+      case module.handle_action(action, conn, state.agent_state) do
         {:noreply, agent_state} ->
           {:noreply, %{state | agent_state: agent_state}}
       end
@@ -169,10 +176,10 @@ defmodule A2UI.Agent do
   end
 
   def __handle_info__(module, _super_fn, {:a2ui_error, error, metadata}, %State{} = state) do
-    pid = Map.get(metadata, :liveview_pid)
+    conn = Map.get(metadata, :connection)
 
-    if pid do
-      case module.handle_error(error, pid, state.agent_state) do
+    if conn do
+      case module.handle_error(error, conn, state.agent_state) do
         {:noreply, agent_state} ->
           {:noreply, %{state | agent_state: agent_state}}
       end
@@ -181,25 +188,43 @@ defmodule A2UI.Agent do
     end
   end
 
-  def __handle_info__(module, _super_fn, {:a2ui_disconnect, pid}, %State{} = state) do
-    connections = MapSet.delete(state.connections, pid)
+  def __handle_info__(
+        module,
+        _super_fn,
+        {:a2ui_disconnect, %Connection{} = conn},
+        %State{} = state
+      ) do
+    case Map.pop(state.connections, conn.id) do
+      {{_conn, ref}, connections} ->
+        Process.demonitor(ref, [:flush])
 
-    case module.handle_disconnect(pid, state.agent_state) do
-      {:noreply, agent_state} ->
-        {:noreply, %{state | connections: connections, agent_state: agent_state}}
+        case module.handle_disconnect(conn, state.agent_state) do
+          {:noreply, agent_state} ->
+            {:noreply, %{state | connections: connections, agent_state: agent_state}}
+        end
+
+      {nil, _connections} ->
+        {:noreply, state}
     end
   end
 
-  def __handle_info__(module, _super_fn, {:DOWN, _ref, :process, pid, _reason}, %State{} = state) do
-    if MapSet.member?(state.connections, pid) do
-      connections = MapSet.delete(state.connections, pid)
+  def __handle_info__(
+        module,
+        _super_fn,
+        {:DOWN, _ref, :process, pid, _reason},
+        %State{} = state
+      ) do
+    case Enum.find(state.connections, fn {_id, {c, _ref}} -> c.pid == pid end) do
+      {_id, {conn, _ref}} ->
+        connections = Map.delete(state.connections, conn.id)
 
-      case module.handle_disconnect(pid, state.agent_state) do
-        {:noreply, agent_state} ->
-          {:noreply, %{state | connections: connections, agent_state: agent_state}}
-      end
-    else
-      {:noreply, state}
+        case module.handle_disconnect(conn, state.agent_state) do
+          {:noreply, agent_state} ->
+            {:noreply, %{state | connections: connections, agent_state: agent_state}}
+        end
+
+      nil ->
+        {:noreply, state}
     end
   end
 
