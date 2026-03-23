@@ -1,6 +1,7 @@
 defmodule A2UI.Demo.AgentTest do
   use ExUnit.Case, async: true
 
+  alias A2UI.Connection
   alias A2UI.Demo.Agent
   alias A2UI.Protocol.Messages.{CreateSurface, UpdateComponents, UpdateDataModel, Action}
 
@@ -9,9 +10,15 @@ defmodule A2UI.Demo.AgentTest do
     %{agent: agent}
   end
 
+  defp connect(agent) do
+    conn = Connection.local(self())
+    send(agent, {:a2ui_connect, conn})
+    conn
+  end
+
   describe "connect" do
     test "sends CreateSurface, UpdateDataModel, and UpdateComponents on connect", %{agent: agent} do
-      send(agent, {:a2ui_connect, self()})
+      connect(agent)
 
       assert_receive {:a2ui_message, %CreateSurface{surface_id: "main", send_data_model: true}}
 
@@ -48,7 +55,7 @@ defmodule A2UI.Demo.AgentTest do
 
   describe "submit_booking action" do
     test "sends confirmation components", %{agent: agent} do
-      send(agent, {:a2ui_connect, self()})
+      conn = connect(agent)
       flush_connect_messages()
 
       action = %Action{
@@ -63,7 +70,7 @@ defmodule A2UI.Demo.AgentTest do
         }
       }
 
-      send(agent, {:a2ui_action, action, %{liveview_pid: self()}})
+      send(agent, {:a2ui_action, action, %{connection: conn}})
 
       assert_receive {:a2ui_message, %UpdateComponents{components: components}}
 
@@ -83,7 +90,7 @@ defmodule A2UI.Demo.AgentTest do
 
   describe "new_reservation action" do
     test "resets data model and sends booking form", %{agent: agent} do
-      send(agent, {:a2ui_connect, self()})
+      conn = connect(agent)
       flush_connect_messages()
 
       # Submit first
@@ -94,7 +101,7 @@ defmodule A2UI.Demo.AgentTest do
         context: %{"name" => "Bob", "date" => "", "guests" => 2, "dietary" => []}
       }
 
-      send(agent, {:a2ui_action, submit, %{liveview_pid: self()}})
+      send(agent, {:a2ui_action, submit, %{connection: conn}})
       assert_receive {:a2ui_message, %UpdateComponents{}}
 
       # Then new reservation
@@ -105,7 +112,7 @@ defmodule A2UI.Demo.AgentTest do
         context: %{}
       }
 
-      send(agent, {:a2ui_action, new_res, %{liveview_pid: self()}})
+      send(agent, {:a2ui_action, new_res, %{connection: conn}})
 
       assert_receive {:a2ui_message, %UpdateDataModel{path: "/", has_value: true, value: value}}
       assert value["reservation"]["name"] == ""
@@ -119,10 +126,10 @@ defmodule A2UI.Demo.AgentTest do
 
   describe "disconnect" do
     test "agent stays alive after disconnect", %{agent: agent} do
-      send(agent, {:a2ui_connect, self()})
+      conn = connect(agent)
       flush_connect_messages()
 
-      send(agent, {:a2ui_disconnect, self()})
+      send(agent, {:a2ui_disconnect, conn})
       # Small delay to let the message process
       Process.sleep(10)
       assert Process.alive?(agent)
@@ -134,7 +141,8 @@ defmodule A2UI.Demo.AgentTest do
       # Spawn a temporary process to connect
       task =
         Task.async(fn ->
-          send(agent, {:a2ui_connect, self()})
+          conn = Connection.local(self())
+          send(agent, {:a2ui_connect, conn})
           receive do: (_ -> :ok)
         end)
 
@@ -151,7 +159,7 @@ defmodule A2UI.Demo.AgentTest do
   describe "multiple connections" do
     test "handles independent connections", %{agent: agent} do
       # Connect from this process
-      send(agent, {:a2ui_connect, self()})
+      connect(agent)
       assert_receive {:a2ui_message, %CreateSurface{}}
       assert_receive {:a2ui_message, %UpdateDataModel{}}
       assert_receive {:a2ui_message, %UpdateComponents{}}
@@ -160,7 +168,8 @@ defmodule A2UI.Demo.AgentTest do
       parent = self()
 
       spawn(fn ->
-        send(agent, {:a2ui_connect, self()})
+        conn = Connection.local(self())
+        send(agent, {:a2ui_connect, conn})
         assert_receive {:a2ui_message, %CreateSurface{}}
         assert_receive {:a2ui_message, %UpdateDataModel{}}
         assert_receive {:a2ui_message, %UpdateComponents{}}

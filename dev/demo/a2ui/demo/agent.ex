@@ -18,7 +18,7 @@ defmodule A2UI.Demo.Agent do
   @impl A2UI.Agent
   def handle_connect(conn, state) do
     send_booking_form(conn)
-    {:noreply, put_in(state, [:screens, conn], :booking)}
+    {:noreply, put_in(state, [:screens, conn.id], :booking)}
   end
 
   @impl A2UI.Agent
@@ -26,12 +26,12 @@ defmodule A2UI.Demo.Agent do
     case action.name do
       "submit_booking" ->
         send_confirmation(conn, action.context)
-        {:noreply, put_in(state, [:screens, conn], :confirmation)}
+        {:noreply, put_in(state, [:screens, conn.id], :confirmation)}
 
       "new_reservation" ->
         send_reset(conn)
         send_booking_form_components(conn)
-        {:noreply, put_in(state, [:screens, conn], :booking)}
+        {:noreply, put_in(state, [:screens, conn.id], :booking)}
 
       _ ->
         {:noreply, state}
@@ -40,7 +40,7 @@ defmodule A2UI.Demo.Agent do
 
   @impl A2UI.Agent
   def handle_disconnect(conn, state) do
-    {:noreply, %{state | screens: Map.delete(state.screens, conn)}}
+    {:noreply, %{state | screens: Map.delete(state.screens, conn.id)}}
   end
 
   # ── Private ──

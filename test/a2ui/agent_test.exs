@@ -1,6 +1,7 @@
 defmodule A2UI.AgentTest do
   use ExUnit.Case, async: true
 
+  alias A2UI.Connection
   alias A2UI.Protocol.Messages.{Action, Error}
 
   defmodule TestAgent do
@@ -75,6 +76,12 @@ defmodule A2UI.AgentTest do
     def handle_action(_action, _conn, state), do: {:noreply, state}
   end
 
+  defp connect(agent) do
+    conn = Connection.local(self())
+    send(agent, {:a2ui_connect, conn})
+    conn
+  end
+
   describe "init/1" do
     test "passes opts to agent init callback" do
       {:ok, pid} = TestAgent.start_link(test_pid: self())
@@ -91,23 +98,23 @@ defmodule A2UI.AgentTest do
   describe "handle_connect" do
     test "fires callback and monitors the connection" do
       {:ok, agent} = TestAgent.start_link(test_pid: self())
-      send(agent, {:a2ui_connect, self()})
-      assert_receive {:connected, pid} when pid == self()
+      conn = connect(agent)
+      assert_receive {:connected, ^conn}
       GenServer.stop(agent)
     end
 
-    test "sends messages to the connected LiveView" do
+    test "sends messages to the connected client" do
       {:ok, agent} = TestAgent.start_link(test_pid: self())
-      send(agent, {:a2ui_connect, self()})
-      assert_receive {:connected, _}
+      conn = connect(agent)
+      assert_receive {:connected, ^conn}
       GenServer.stop(agent)
     end
   end
 
   describe "handle_action" do
-    test "routes action with liveview_pid metadata" do
+    test "routes action with connection metadata" do
       {:ok, agent} = TestAgent.start_link(test_pid: self())
-      send(agent, {:a2ui_connect, self()})
+      conn = connect(agent)
       assert_receive {:connected, _}
 
       action = %Action{
@@ -117,12 +124,12 @@ defmodule A2UI.AgentTest do
         context: %{}
       }
 
-      send(agent, {:a2ui_action, action, %{liveview_pid: self()}})
-      assert_receive {:action, "test_action", pid} when pid == self()
+      send(agent, {:a2ui_action, action, %{connection: conn}})
+      assert_receive {:action, "test_action", ^conn}
       GenServer.stop(agent)
     end
 
-    test "silently ignores action with nil pid" do
+    test "silently ignores action with no connection" do
       {:ok, agent} = TestAgent.start_link(test_pid: self())
 
       action = %Action{
@@ -139,9 +146,9 @@ defmodule A2UI.AgentTest do
   end
 
   describe "handle_error" do
-    test "routes error with liveview_pid metadata" do
+    test "routes error with connection metadata" do
       {:ok, agent} = TestAgent.start_link(test_pid: self())
-      send(agent, {:a2ui_connect, self()})
+      conn = connect(agent)
       assert_receive {:connected, _}
 
       error = %Error{
@@ -151,12 +158,12 @@ defmodule A2UI.AgentTest do
         message: "Required"
       }
 
-      send(agent, {:a2ui_error, error, %{liveview_pid: self()}})
-      assert_receive {:error, "VALIDATION_FAILED", pid} when pid == self()
+      send(agent, {:a2ui_error, error, %{connection: conn}})
+      assert_receive {:error, "VALIDATION_FAILED", ^conn}
       GenServer.stop(agent)
     end
 
-    test "silently ignores error with nil pid" do
+    test "silently ignores error with no connection" do
       {:ok, agent} = TestAgent.start_link(test_pid: self())
 
       error = %Error{
@@ -175,11 +182,11 @@ defmodule A2UI.AgentTest do
   describe "handle_disconnect" do
     test "fires on explicit disconnect" do
       {:ok, agent} = TestAgent.start_link(test_pid: self())
-      send(agent, {:a2ui_connect, self()})
+      conn = connect(agent)
       assert_receive {:connected, _}
 
-      send(agent, {:a2ui_disconnect, self()})
-      assert_receive {:disconnected, pid} when pid == self()
+      send(agent, {:a2ui_disconnect, conn})
+      assert_receive {:disconnected, ^conn}
       GenServer.stop(agent)
     end
 
@@ -193,11 +200,12 @@ defmodule A2UI.AgentTest do
           end
         end)
 
-      send(agent, {:a2ui_connect, child})
-      assert_receive {:connected, ^child}
+      child_conn = Connection.local(child)
+      send(agent, {:a2ui_connect, child_conn})
+      assert_receive {:connected, ^child_conn}
 
       send(child, :stop)
-      assert_receive {:disconnected, ^child}, 500
+      assert_receive {:disconnected, ^child_conn}, 500
       GenServer.stop(agent)
     end
 
@@ -213,7 +221,7 @@ defmodule A2UI.AgentTest do
   describe "default handle_error" do
     test "minimal agent without handle_error does not crash" do
       {:ok, agent} = MinimalAgent.start_link(test_pid: self())
-      send(agent, {:a2ui_connect, self()})
+      conn = connect(agent)
       assert_receive {:connected, _}
 
       error = %Error{
@@ -223,7 +231,7 @@ defmodule A2UI.AgentTest do
         message: "Required"
       }
 
-      send(agent, {:a2ui_error, error, %{liveview_pid: self()}})
+      send(agent, {:a2ui_error, error, %{connection: conn}})
       :timer.sleep(50)
       assert Process.alive?(agent)
       GenServer.stop(agent)
@@ -233,10 +241,10 @@ defmodule A2UI.AgentTest do
   describe "default handle_disconnect" do
     test "minimal agent without handle_disconnect does not crash" do
       {:ok, agent} = MinimalAgent.start_link(test_pid: self())
-      send(agent, {:a2ui_connect, self()})
+      conn = connect(agent)
       assert_receive {:connected, _}
 
-      send(agent, {:a2ui_disconnect, self()})
+      send(agent, {:a2ui_disconnect, conn})
       :timer.sleep(50)
       assert Process.alive?(agent)
       GenServer.stop(agent)
@@ -253,15 +261,17 @@ defmodule A2UI.AgentTest do
   end
 
   describe "send_message/2" do
-    test "delivers message as {:a2ui_message, _}" do
-      A2UI.Agent.send_message(self(), :test_msg)
+    test "delivers message via transport" do
+      conn = Connection.local(self())
+      A2UI.Agent.send_message(conn, :test_msg)
       assert_receive {:a2ui_message, :test_msg}
     end
   end
 
   describe "send_messages/2" do
     test "delivers all messages in order" do
-      A2UI.Agent.send_messages(self(), [:msg1, :msg2, :msg3])
+      conn = Connection.local(self())
+      A2UI.Agent.send_messages(conn, [:msg1, :msg2, :msg3])
       assert_receive {:a2ui_message, :msg1}
       assert_receive {:a2ui_message, :msg2}
       assert_receive {:a2ui_message, :msg3}

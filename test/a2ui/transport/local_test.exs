@@ -1,35 +1,40 @@
 defmodule A2UI.Transport.LocalTest do
   use ExUnit.Case, async: true
 
+  alias A2UI.Connection
   alias A2UI.Transport.Local
   alias A2UI.Protocol.Messages.{Action, Error}
 
-  test "connect sends {:a2ui_connect, pid} to agent" do
+  test "connect sends {:a2ui_connect, %Connection{}} to agent" do
     agent = self()
     assert {:ok, transport} = Local.connect(agent: agent)
-    assert_received {:a2ui_connect, pid}
-    assert pid == self()
+    assert_received {:a2ui_connect, %Connection{} = conn}
+    assert conn.pid == self()
+    assert conn.ref == self()
+    assert conn.transport == Local
+    assert is_binary(conn.id)
     assert transport.agent == agent
-    assert transport.liveview == self()
+    assert transport.connection == conn
   end
 
   test "send_action sends {:a2ui_action, action, metadata} to agent" do
     agent = self()
     {:ok, transport} = Local.connect(agent: agent)
-    # Drain the connect message
-    assert_received {:a2ui_connect, _}
+    assert_received {:a2ui_connect, %Connection{} = conn}
 
     action = %Action{name: "submit", surface_id: "s1", source_component_id: "btn1"}
     metadata = %{foo: "bar"}
 
     assert :ok = Local.send_action(transport, action, metadata)
-    assert_received {:a2ui_action, ^action, ^metadata}
+    assert_received {:a2ui_action, ^action, received_meta}
+    assert received_meta.foo == "bar"
+    assert received_meta.connection == conn
   end
 
   test "send_error sends {:a2ui_error, error, metadata} to agent" do
     agent = self()
     {:ok, transport} = Local.connect(agent: agent)
-    assert_received {:a2ui_connect, _}
+    assert_received {:a2ui_connect, %Connection{} = conn}
 
     error = %Error{
       code: "VALIDATION_FAILED",
@@ -41,25 +46,23 @@ defmodule A2UI.Transport.LocalTest do
     metadata = %{foo: "bar"}
 
     assert :ok = Local.send_error(transport, error, metadata)
-    assert_received {:a2ui_error, ^error, ^metadata}
+    assert_received {:a2ui_error, ^error, received_meta}
+    assert received_meta.foo == "bar"
+    assert received_meta.connection == conn
   end
 
-  test "disconnect sends {:a2ui_disconnect, pid} to agent" do
+  test "disconnect sends {:a2ui_disconnect, %Connection{}} to agent" do
     agent = self()
     {:ok, transport} = Local.connect(agent: agent)
-    assert_received {:a2ui_connect, _}
+    assert_received {:a2ui_connect, %Connection{} = conn}
 
     assert :ok = Local.disconnect(transport)
-    assert_received {:a2ui_disconnect, pid}
-    assert pid == self()
+    assert_received {:a2ui_disconnect, ^conn}
   end
 
-  test "agent can send {:a2ui_message, msg} back to liveview" do
-    # Simulate agent sending a message to the liveview process
-    liveview = self()
+  test "deliver_message sends {:a2ui_message, msg} to pid" do
     msg = %A2UI.Protocol.Messages.CreateSurface{surface_id: "s1", catalog_id: "basic"}
-    send(liveview, {:a2ui_message, msg})
-
+    assert :ok = Local.deliver_message(self(), msg)
     assert_received {:a2ui_message, ^msg}
   end
 
@@ -75,11 +78,11 @@ defmodule A2UI.Transport.LocalTest do
     task =
       Task.async(fn ->
         {:ok, transport} = Local.connect(agent: agent)
-        transport.liveview
+        transport.connection.pid
       end)
 
     liveview_pid = Task.await(task)
-    assert_received {:a2ui_connect, ^liveview_pid}
+    assert_received {:a2ui_connect, %Connection{pid: ^liveview_pid}}
     assert liveview_pid != self()
   end
 end
