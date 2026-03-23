@@ -18,30 +18,29 @@ spec lists these as viable options:
 | Transport      | Type             | Status                                    |
 |----------------|------------------|-------------------------------------------|
 | Local          | Erlang messages  | **Done** (`A2UI.Transport.Local`)         |
-| SSE + JSON-RPC | HTTP transport   | Phase 1                                   |
+| SSE + JSON-RPC | HTTP transport   | **Done** (`A2UI.Plug`, `A2UI.Plug.SSE`, `A2UI.Plug.JSONRPC`) |
 | A2A            | Protocol adapter | Phase 2                                   |
 | WebSocket      | HTTP transport   | Phase 3                                   |
 | REST           | HTTP transport   | Phase 4                                   |
 | AG-UI          | Protocol adapter | Phase 5                                   |
 | MCP            | Protocol adapter | Phase 6 (future — spec needs more detail) |
 
-### Proxy Pid Pattern
+### Connection Abstraction
 
-All network transports reuse the existing agent connection model without
-modifying `A2UI.Agent`. A handler process (SSE loop, WebSocket handler, etc.)
-acts as a **proxy pid** — it connects to the agent exactly like a LiveView
-does, receives `{:a2ui_message, msg}`, and forwards over the wire:
+`A2UI.Connection` is an opaque handle representing a connected client. The
+agent receives it in `handle_connect/2` and passes it to `send_message/2` —
+the agent never knows which transport is in use.
 
 ```
 External Client ←──HTTP/WS──→ Handler Process ←──Erlang msgs──→ A2UI Agent
-                               (proxy pid)
+                               (A2UI.Connection)
 ```
 
-This means:
-- `A2UI.Agent.send_message/2` continues to use `send(pid, {:a2ui_message, msg})`
-- Agent tracks handler pids in its connection MapSet
-- `Process.monitor` detects handler process death (connection drop)
-- Zero changes to `A2UI.Agent`, `A2UI.Live`, or `A2UI.Transport` behaviour
+- `A2UI.Connection` struct: `id`, `transport` (module), `ref`, `pid`
+- `A2UI.Agent.send_message/2` dispatches through `transport.deliver_message(ref, msg)`
+- `A2UI.Transport` behaviour includes `deliver_message/2` (agent→client direction)
+- Agent tracks connections as `%{id => Connection.t()}` with `Process.monitor`
+- Dispatch helpers: `A2UI.Transport.send_action/3`, `.send_error/3`, `.disconnect/1`
 
 ### Transport Contract (from v0.9 spec)
 
@@ -60,31 +59,29 @@ All transports must fulfill:
 
 ### Modules
 
-- [ ] **`A2UI.Plug`** — Plug router, guarded with `Code.ensure_loaded?(Plug)`
+- [x] **`A2UI.Plug`** — Plug router, guarded with `Code.ensure_loaded?(Plug)`
   - `GET /sse` → SSE connection endpoint
   - `POST /rpc` → JSON-RPC endpoint
   - Options: `:agent` (required), `:sse_path`, `:rpc_path`
-  - Pattern: follow `A2A.Plug` (`a2a-elixir/lib/a2a/plug.ex`)
 
-- [ ] **`A2UI.Plug.SSE`** — SSE connection handler
-  - On GET: generate unique connection ID, spawn handler process
-  - Handler process sends `{:a2ui_connect, self()}` to agent
-  - Receives `{:a2ui_message, msg}` → `Message.to_json/1` → SSE `data:` event
+- [x] **`A2UI.Plug.SSE`** — SSE connection handler
+  - On GET: generate unique connection ID, create `A2UI.Connection`
+  - Connects to agent via `{:a2ui_connect, %Connection{}}`
+  - Receives `{:a2ui_deliver, msg}` → `Message.to_json/1` → SSE `data:` event
   - SSE event format: `id: <seq>\ndata: <json>\n\n`
-  - On HTTP disconnect: sends `{:a2ui_disconnect, self()}` to agent
+  - Keep-alive pings every 30s
   - Initial SSE event includes `connectionId` for client to use in JSON-RPC
-  - Pattern: follow `A2A.Plug.SSE` (`a2a-elixir/lib/a2a/plug/sse.ex`)
 
-- [ ] **`A2UI.Plug.JSONRPC`** — JSON-RPC request handler
+- [x] **`A2UI.Plug.JSONRPC`** — JSON-RPC request handler
   - Method `a2ui.action`: params `{connectionId, action}` → parse Action → forward to agent via handler pid
   - Method `a2ui.error`: params `{connectionId, error}` → parse Error → forward to agent via handler pid
-  - Returns JSON-RPC success/error responses
+  - Returns JSON-RPC 2.0 success/error responses
   - Looks up handler pid from connection registry
 
-- [ ] **`A2UI.Plug.ConnectionRegistry`** — ETS-based registry
+- [x] **`A2UI.Plug.ConnectionRegistry`** — ETS-based registry
   - Maps `connection_id → handler_pid`
-  - Created lazily in `A2UI.Plug.init/1` or by user in their supervision tree
-  - Entries cleaned up when handler process exits (via monitor)
+  - Created lazily in `A2UI.Plug.init/1`
+  - Auto-cleanup when handler process exits (via monitor)
 
 ### Wire Format
 
