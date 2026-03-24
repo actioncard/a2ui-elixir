@@ -23,6 +23,8 @@ Agents send A2UI v0.9 JSONL messages describing components, and this library ren
 - **LiveView macro** — `use A2UI.Live` injects mount hook, message handling, and event dispatch
 - **Agent macro** — `use A2UI.Agent` handles connection tracking, process monitoring, and message routing
 - **Transport abstraction** — `A2UI.Transport` behaviour with built-in local (process message) transport
+- **SSE + JSON-RPC transport** — `A2UI.Plug` serves agents over HTTP with Server-Sent Events and JSON-RPC 2.0
+- **A2A transport** — `A2UI.A2A` server adapter and `A2UI.Transport.A2A` client for agent-to-agent communication (optional dep on `:a2a`)
 - **CSS classes** — BEM-style `a2ui-*` classes on all components for easy styling
 - **Demo app** — `mix a2ui.demo` launches a restaurant booking agent at `localhost:4002`
 
@@ -179,7 +181,7 @@ Add `a2ui` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:a2ui, "~> 0.1.0"}
+    {:a2ui, "~> 0.2.0"}
   ]
 end
 ```
@@ -234,12 +236,6 @@ a2ui-elixir is a **server-side renderer** — the only one in the A2UI ecosystem
 [a2ui_lv](https://github.com/lukaszsamson/a2ui_lv) is another server-side LiveView renderer for A2UI. It takes a similar approach to this library — parsing JSONL messages and rendering Phoenix components — but adds support for both **v0.8 and v0.9** of the protocol and includes A2A protocol extension support.
 
 [ex_a2ui](https://github.com/23min/ex_a2ui) implements the opposite end of the protocol: it is a **protocol server** that encodes A2UI surfaces as JSON and pushes them over WebSocket or SSE to client-side renderers. Where this library and a2ui_lv consume A2UI messages, ex_a2ui produces them.
-
-## Not Yet Implemented
-
-- **`error` message (client→server)** — v0.9 `ValidationFailed` error feedback to the agent
-- **`catalogId` validation** — verifying components against a remote catalog JSON schema
-- **Remote transports** — SSE/HTTP, A2A protocol integration (via [a2a-elixir](https://github.com/actioncard/a2a-elixir))
 
 ## Links
 

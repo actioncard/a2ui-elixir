@@ -7,14 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-24
+
 ### Added
 
 - `A2UI.Agent` behaviour and `use A2UI.Agent` macro for building agents with minimal boilerplate
-- `A2UI.Agent.send_message/2` and `send_messages/2` helpers
+- `A2UI.Agent.send_message/2` and `send_messages/2` helpers for agent-to-client messaging
+- `A2UI.Connection` opaque handle for transport-agnostic client connections
+- SSE + JSON-RPC HTTP transport: `A2UI.Plug`, `A2UI.Plug.SSE`, `A2UI.Plug.JSONRPC`, `A2UI.Plug.ConnectionRegistry`
+- `A2UI.Transport.SSE` client-side transport for connecting to SSE endpoints
+- A2A protocol transport binding: `A2UI.A2A` server adapter, `A2UI.Transport.A2A` client transport (optional dep on `:a2a ~> 0.2`)
+- `A2UI.Protocol.Messages.Error` message type for client-to-server error feedback
+- `A2UI.Catalog` module for compile-time component type validation against catalog schemas
 
 ### Changed
 
+- Agents track connections as `%{id => Connection.t()}` map instead of `MapSet` of PIDs (**breaking** for custom agent implementations that relied on the internal connection tracking format)
 - Demo agent refactored to use `A2UI.Agent` behaviour
+
+### Fixed
+
+- Form handling: added missing `phx-submit` attribute
+- Catalog validation: accept custom `component_modules` in validation
 
 ## [0.1.0] - 2026-03-06
 

@@ -1,7 +1,7 @@
 defmodule A2UI.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.2.0"
   @source_url "https://github.com/actioncard/a2ui-elixir"
 
   def project do
@@ -89,12 +89,21 @@ defmodule A2UI.MixProject do
       main: "A2UI",
       extras: ["README.md", "CHANGELOG.md", "CONTRIBUTING.md", "SPEC.md", "LICENSE"],
       groups_for_modules: [
-        Core: [~r/^A2UI$/],
+        Core: [~r/^A2UI$/, A2UI.Agent, A2UI.Connection, A2UI.Catalog],
+        "Surface & Rendering": [
+          A2UI.Surface,
+          A2UI.SurfaceManager,
+          A2UI.Component,
+          A2UI.ComponentTree,
+          A2UI.ComponentRenderer
+        ],
         Protocol: [~r/A2UI\.Protocol/],
         Components: [~r/A2UI\.Components/],
         "Data Model": [~r/A2UI\.DataModel/],
         LiveView: [~r/A2UI\.Live/],
-        Transport: [~r/A2UI\.Transport/]
+        Transport: [~r/A2UI\.Transport/],
+        "Plug (SSE + JSON-RPC)": [~r/A2UI\.Plug/],
+        "A2A Integration": [A2UI.A2A]
       ]
     ]
   end

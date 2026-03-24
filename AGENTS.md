@@ -64,7 +64,7 @@
 ## Package Info
 
 - Hex package name: `a2ui`
-- Version: 0.1.0
+- Version: 0.2.0
 - Source: https://github.com/actioncard/a2ui-elixir
 - License: Apache-2.0
 - Maintainer: Action Card AB
@@ -95,7 +95,7 @@ Browser (native HTML, phx-click / phx-change events)
 3. **Data Binding Resolved at Render Time** — props stay as raw JSON until render, LiveView diff engine detects changes
 4. **Adjacency List Stays Flat** — renderer walks `%{id => component}` map via ID lookups, no tree reconstruction
 5. **CSS Convention** — `a2ui-*` BEM-style classes, layout via CSS utility classes, weight via `--a2ui-weight` custom property
-6. **Transport as Behaviour** — `A2UI.Transport` behaviour; `Local` (process messages) now, SSE/A2A later
+6. **Transport as Behaviour** — `A2UI.Transport` behaviour; `Local` (process messages), `SSE` (HTTP), `A2A` (agent-to-agent)
 
 ## Do NOT
 
