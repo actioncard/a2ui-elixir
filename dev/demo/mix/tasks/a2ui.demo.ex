@@ -22,11 +22,15 @@ defmodule Mix.Tasks.A2ui.Demo do
     Application.put_env(:a2ui, A2UI.Demo.Endpoint, Keyword.put(endpoint_config, :server, true))
 
     {:ok, _} = A2UI.Demo.Agent.start_link(name: A2UI.Demo.Agent)
+    {:ok, _} = A2UI.Demo.A2AAdapter.start_link()
     {:ok, _} = A2UI.Demo.Endpoint.start_link()
 
     Mix.shell().info("""
 
-    A2UI Demo running at http://localhost:4002
+    A2UI Demo running:
+
+      Local transport:  http://localhost:4002
+      A2A transport:    http://localhost:4002/a2a
 
     Press Ctrl+C to stop.
     """)
