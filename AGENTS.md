@@ -46,7 +46,7 @@
 
 ### Pre-commit
 
-- `mix test` and `mix bun test` must both pass before committing
+- Run `mix precommit` before committing (compile, unlock unused deps, format, test Elixir + JS)
 
 ## Version Control
 
