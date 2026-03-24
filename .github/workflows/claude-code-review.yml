@@ -72,6 +72,8 @@ jobs:
             - If no issues meet the criteria above, post a single summary comment:
               "Reviewed — no high-confidence issues found. LGTM."
             - Only post GitHub comments — don't submit review text as messages
+          # TODO: disable after tuning — logs all Claude messages including tool results
+          show_full_output: true
           claude_args: >-
             --max-turns 15
             --allowedTools "Read,Glob,Grep,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),mcp__github_inline_comment__create_inline_comment"
