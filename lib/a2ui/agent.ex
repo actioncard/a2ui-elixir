@@ -232,6 +232,11 @@ defmodule A2UI.Agent do
     end
   end
 
+  def __handle_info__(_module, _super_fn, {:a2ui_sync, pid, ref}, %State{} = state) do
+    send(pid, {:a2ui_sync_ack, ref})
+    {:noreply, state}
+  end
+
   def __handle_info__(_module, super_fn, msg, %State{} = state) do
     case super_fn.(msg, state.agent_state) do
       {:noreply, agent_state} ->

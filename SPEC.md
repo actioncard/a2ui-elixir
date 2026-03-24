@@ -19,7 +19,7 @@ spec lists these as viable options:
 |----------------|------------------|-------------------------------------------|
 | Local          | Erlang messages  | **Done** (`A2UI.Transport.Local`)         |
 | SSE + JSON-RPC | HTTP transport   | **Done** (`A2UI.Plug`, `A2UI.Plug.SSE`, `A2UI.Plug.JSONRPC`) |
-| A2A            | Protocol adapter | Phase 2                                   |
+| A2A            | Protocol adapter | **Done** (`A2UI.A2A`, `A2UI.Transport.A2A`) |
 | WebSocket      | HTTP transport   | Phase 3                                   |
 | REST           | HTTP transport   | Phase 4                                   |
 | AG-UI          | Protocol adapter | Phase 5                                   |
@@ -128,36 +128,30 @@ The v0.9 spec defines A2A as a first-class transport binding:
 Implements the `A2UI.Transport` behaviour. Allows a LiveView to connect
 to a remote A2UI agent over A2A protocol (HTTP JSON-RPC + SSE streaming).
 
-- [ ] **`A2UI.Transport.A2A`** — A2A client transport
-  - `connect/1` — accepts `:url` (agent card URL) or `:client` (pre-built `A2A.Client`),
-    discovers agent card, sends initial A2A message with `a2uiClientCapabilities` in metadata
-  - Spawns a handler process that calls `A2A.Client.stream_message/2`
-  - Extracts A2UI envelopes from `A2A.Part.Data` parts in the response stream
+- [x] **`A2UI.Transport.A2A`** — A2A client transport
+  - `connect/1` — accepts `:url` or `:client` (pre-built `A2A.Client`),
+    sends initial A2A message, spawns handler process
+  - Extracts A2UI envelopes from `A2A.Part.Data` parts in the response
   - Delivers each as `{:a2ui_message, parsed_struct}` to the LiveView
-  - `send_action/3` — sends A2A message with Action as `Part.Data`, includes
-    `a2uiClientDataModel` in metadata when `send_data_model` is active
+  - `send_action/3` — sends A2A message with Action as `Part.Data`
   - `send_error/3` — sends A2A message with Error as `Part.Data`
   - `disconnect/1` — cancels the A2A task if still running
-  - Manages A2A task lifecycle: uses `contextId` for session continuity,
-    continues tasks via `task_id` on `input_required` state
+  - Manages A2A task lifecycle: continues tasks via `task_id` on `input_required` state
 
 ### Server Side — `A2UI.A2A`
 
 Wraps an `A2UI.Agent` so it can be served over A2A protocol. An A2A client
 (including `A2UI.Transport.A2A` above) can connect to it.
 
-- [ ] **`A2UI.A2A`** — adapter macro
+- [x] **`A2UI.A2A`** — adapter macro
   - `use A2UI.A2A, agent: MyApp.UIAgent` generates an `A2A.Agent` that
     wraps the given `A2UI.Agent`
   - On `handle_message/2`: extracts A2UI actions/errors from incoming
     `Part.Data` parts → creates `A2UI.Connection` → forwards to the A2UI agent
-  - Collects `{:a2ui_message, msg}` responses from the agent →
-    wraps each as `A2A.Part.Data` with the A2UI JSON envelope
-  - Returns `{:stream, enumerable}` for real-time message delivery or
-    `{:reply, parts}` for batch response
-  - Maps A2A `contextId` to A2UI connection/session for multi-turn interactions
-  - First message in a context triggers `handle_connect`; subsequent messages
-    with the same `contextId` route to `handle_action`
+  - Collects responses via sync fence → wraps as `A2A.Part.Data`
+  - Returns `{:input_required, parts}` to keep the task open for more turns
+  - First message in a task triggers `handle_connect`; subsequent messages
+    with the same `task_id` route to `handle_action`
 
 ### A2A ↔ A2UI Message Mapping
 
@@ -207,12 +201,12 @@ Client action sent as A2A message:
 
 ### Dependencies
 
-- `{:a2a, "~> 0.1"}` — optional dependency, guarded with `Code.ensure_loaded?(A2A.Agent)`
+- `{:a2a, "~> 0.2", optional: true}` — guarded with `Code.ensure_loaded?(A2A.Agent)` / `Code.ensure_loaded?(A2A.Client)`
 
 ### Tests
 
-- `test/a2ui/transport/a2a_test.exs` — client transport: connect, receive messages, send actions
-- `test/a2ui/a2a_test.exs` — server adapter: A2A message → A2UI agent → A2A response
+- [x] `test/a2ui/transport/a2a_test.exs` — client transport: connect, receive messages, send actions, multi-turn
+- [x] `test/a2ui/a2a_test.exs` — server adapter: connect, action forwarding, error forwarding, cancel, multi-turn
 
 ---
 

@@ -44,7 +44,9 @@ defmodule A2UI.MixProject do
       {:bandit, "~> 1.0", only: :dev},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:bun, "~> 2.0", only: [:dev, :test], runtime: false}
+      {:bun, "~> 2.0", only: [:dev, :test], runtime: false},
+      {:a2a, path: "../a2a-elixir", only: [:dev, :test]},
+      {:req, "~> 0.5", only: [:dev, :test]}
     ]
   end
 
