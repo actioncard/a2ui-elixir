@@ -45,14 +45,25 @@ defmodule A2UI.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:bun, "~> 2.0", only: [:dev, :test], runtime: false},
-      {:a2a, path: "../a2a-elixir", only: [:dev, :test]},
+      {:a2a, "~> 0.2", optional: true},
       {:req, "~> 0.5", only: [:dev, :test]}
     ]
+  end
+
+  def cli do
+    [preferred_envs: [precommit: :test]]
   end
 
   defp aliases do
     [
       quality: ["format --check-formatted", "credo --strict", "dialyzer"],
+      precommit: [
+        "compile --warnings-as-errors",
+        "deps.unlock --unused",
+        "format",
+        "test",
+        "bun test"
+      ],
       "test.js": ["bun test"],
       "test.all": ["test", "bun test"],
       "test.ci": ["test --warnings-as-errors", "bun test"]
