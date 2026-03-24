@@ -55,6 +55,9 @@ defmodule A2UI.Catalog do
 
   @all_catalogs Map.put(@custom_catalogs, @basic_catalog_id, @basic_types)
 
+  # Types registered via component_modules are always valid (developer opted in)
+  @custom_component_types Application.compile_env(:a2ui, :component_modules, %{})
+
   @doc """
   Returns the basic catalog ID URL string.
   """
@@ -82,7 +85,9 @@ defmodule A2UI.Catalog do
         invalid =
           components
           |> Enum.map(& &1.type)
-          |> Enum.reject(&Map.has_key?(type_map, &1))
+          |> Enum.reject(
+            &(Map.has_key?(type_map, &1) or Map.has_key?(@custom_component_types, &1))
+          )
           |> Enum.uniq()
 
         case invalid do
