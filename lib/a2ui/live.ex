@@ -60,6 +60,11 @@ defmodule A2UI.Live do
         A2UI.Live.__handle_message__(msg, socket)
       end
 
+      def handle_info({:a2ui_transport_error, reason}, socket) do
+        Logger.error("A2UI transport error: #{inspect(reason)}")
+        {:noreply, socket}
+      end
+
       @impl Phoenix.LiveView
       def handle_event("a2ui_action", params, socket) do
         A2UI.Live.__handle_action__(params, socket, &handle_a2ui_action/3)
