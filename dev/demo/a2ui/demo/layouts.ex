@@ -36,7 +36,12 @@ defmodule A2UI.Demo.Layouts do
   def app(assigns) do
     ~H"""
     <div class="demo-container">
-      <div class="demo-header">A2UI v0.9 Demo</div>
+      <div class="demo-header">
+        A2UI v0.9 Demo
+        <nav style="margin-top:0.25rem">
+          <a href="/">Local</a> · <a href="/a2a">A2A</a>
+        </nav>
+      </div>
       {@inner_content}
     </div>
     """

@@ -12,8 +12,13 @@ defmodule A2UI.Demo.Router do
     plug(:put_secure_browser_headers)
   end
 
+  forward "/a2a-endpoint", A2A.Plug,
+    agent: A2UI.Demo.A2AAdapter,
+    base_url: "http://localhost:4002/a2a-endpoint"
+
   scope "/" do
     pipe_through(:browser)
     live("/", A2UI.Demo.DemoLive)
+    live("/a2a", A2UI.Demo.A2ALive)
   end
 end
