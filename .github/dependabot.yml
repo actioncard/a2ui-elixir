@@ -4,8 +4,40 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      phoenix:
+        patterns:
+          - "phoenix*"
+        update-types: ["patch", "minor"]
+      dev-dependencies:
+        patterns:
+          - "ex_doc"
+          - "credo"
+          - "dialyxir"
+          - "bandit"
+          - "bun"
+          - "floki"
+          - "req"
+        update-types: ["patch", "minor"]
+      runtime-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "phoenix*"
+          - "ex_doc"
+          - "credo"
+          - "dialyxir"
+          - "bandit"
+          - "bun"
+          - "floki"
+          - "req"
+        update-types: ["patch", "minor"]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns:
+          - "*"
