@@ -174,6 +174,20 @@ config :a2ui, component_modules: %{"StatusBadge" => MyApp.A2UI.StatusBadge}
 
 Set `use_default_components: false` to replace all built-in components with your own. See the `A2UI.ComponentRenderer` and `A2UI.Components.Renderer` hexdocs for the full assigns contract, available helpers, and configuration details.
 
+## A2A Configuration
+
+The A2A server adapter waits for the wrapped agent to acknowledge synchronization and for
+buffered A2UI responses to be drained. Configure the timeout for each wait in milliseconds:
+
+```elixir
+# config/config.exs
+config :a2ui, :a2a_sync_timeout, 5_000
+```
+
+The default is `5_000` milliseconds. This is a compile-time setting, so changes require
+recompiling the application. If synchronization times out, processing continues; if draining
+times out, the response contains no buffered A2UI parts.
+
 ## Installation
 
 Add `a2ui` to your list of dependencies in `mix.exs`:
