@@ -29,6 +29,17 @@ if Code.ensure_loaded?(A2A.Agent) do
     - All other options (`:name`, `:description`, `:version`, `:skills`)
       are forwarded to `use A2A.Agent`.
 
+    ## Configuration
+
+    Configure the timeout for each A2A synchronization acknowledgement and buffered response
+    drain in milliseconds:
+
+        config :a2ui, :a2a_sync_timeout, 5_000
+
+    The default is `5_000` milliseconds. This is a compile-time setting, so changes require
+    recompiling the application. If synchronization times out, processing continues; if draining
+    times out, the response contains no buffered A2UI parts.
+
     ## Protocol Mapping
 
     - First A2A message in a task triggers `handle_connect` on the A2UI agent
@@ -41,6 +52,10 @@ if Code.ensure_loaded?(A2A.Agent) do
 
     alias A2UI.Connection
     alias A2UI.Protocol.Message, as: Msg
+
+    # Timeout (ms) for the A2A sync/drain handshake with the A2UI agent.
+    # Overridable per-application: `config :a2ui, a2a_sync_timeout: <ms>`.
+    @a2a_sync_timeout Application.compile_env(:a2ui, :a2a_sync_timeout, 5_000)
 
     @doc false
     defmacro __using__(opts) do
@@ -152,7 +167,7 @@ if Code.ensure_loaded?(A2A.Agent) do
       receive do
         {:a2ui_sync_ack, ^ref} -> :ok
       after
-        5_000 -> :timeout
+        @a2a_sync_timeout -> :timeout
       end
     end
 
@@ -166,7 +181,7 @@ if Code.ensure_loaded?(A2A.Agent) do
             A2A.Part.Data.new(Msg.to_map(msg))
           end)
       after
-        5_000 -> []
+        @a2a_sync_timeout -> []
       end
     end
 
