@@ -221,7 +221,7 @@ mix test
 mix compile --warnings-as-errors
 ```
 
-Requires Elixir ~> 1.17.
+Requires Elixir ~> 1.17 and Erlang/OTP 27 or later.
 
 ## How This Differs
 
