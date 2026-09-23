@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-23
+
+### Added
+
+- `:a2a_sync_timeout` setting for `A2UI.A2A`, bounding how long the adapter
+  waits for a synchronization acknowledgement and for buffered A2UI parts to
+  drain. Compile-time, defaulting to `5_000` ms:
+
+      config :a2ui, :a2a_sync_timeout, 5_000
+
+  Neither timeout is fatal: a synchronization that times out continues
+  processing, and a drain that times out yields a response carrying no
+  buffered A2UI parts.
+
 ### Changed
 
 - Requires `a2a ~> 0.3.0`, up from `~> 0.2`. A2A 0.3 is that library's v1.0
