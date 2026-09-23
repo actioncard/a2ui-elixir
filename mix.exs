@@ -45,7 +45,7 @@ defmodule A2UI.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:bun, "~> 2.0", only: [:dev, :test], runtime: false},
-      {:a2a, "~> 0.2", optional: true},
+      {:a2a, "~> 0.3.0", optional: true},
       {:req, "~> 0.5", only: [:dev, :test]}
     ]
   end

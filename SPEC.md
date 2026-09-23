@@ -201,7 +201,7 @@ Client action sent as A2A message:
 
 ### Dependencies
 
-- `{:a2a, "~> 0.2", optional: true}` — guarded with `Code.ensure_loaded?(A2A.Agent)` / `Code.ensure_loaded?(A2A.Client)`
+- `{:a2a, "~> 0.3.0", optional: true}` — guarded with `Code.ensure_loaded?(A2A.Agent)` / `Code.ensure_loaded?(A2A.Client)`
 
 ### Tests
 
