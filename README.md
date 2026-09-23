@@ -195,7 +195,7 @@ Add `a2ui` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:a2ui, "~> 0.2.0"}
+    {:a2ui, "~> 0.3.0"}
   ]
 end
 ```
