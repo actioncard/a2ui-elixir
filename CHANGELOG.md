@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Requires `a2a ~> 0.3.0`, up from `~> 0.2`. A2A 0.3 is that library's v1.0
+  protocol release: streaming events moved to the `StreamResponse` wrapper,
+  A2A errors carry a `google.rpc.ErrorInfo` array, and `message/stream` is
+  gated on a declared streaming capability. A2UI uses only the synchronous
+  A2A path — `send_message`, `cancel_task` and `A2A.Part.Data` — so none of
+  that reaches this library and no code changed.
+
+  The requirement is now pinned to a single A2A minor rather than the whole
+  `0.x` range. A2A is pre-1.0 and ships breaking changes in minor releases,
+  so `~> 0.2` would have let 0.3's wire changes land here unannounced — and
+  `~> 0.3` would do the same for 0.4. **A2A 0.2.x is no longer supported.**
+
 ## [0.2.0] - 2026-03-24
 
 ### Added
