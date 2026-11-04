@@ -75,8 +75,8 @@ defmodule A2UI.MixProject do
       name: "a2ui",
       maintainers: ["Action Card AB"],
       licenses: ["Apache-2.0"],
-      files:
-        ~w(lib priv/static .formatter.exs mix.exs README.md LICENSE CHANGELOG.md CONTRIBUTING.md SPEC.md),
+      files: ~w(lib priv/static priv/catalogs .formatter.exs mix.exs README.md LICENSE
+           CHANGELOG.md CONTRIBUTING.md SPEC.md),
       links: %{
         "GitHub" => @source_url,
         "A2UI Spec" => "https://a2ui.org/specification/v0.9-a2ui/"
