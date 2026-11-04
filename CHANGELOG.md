@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-04
+
+### Fixed
+
+- The Hex package now includes `priv/catalogs/basic_catalog.json`, which
+  `A2UI.Catalog` reads at compile time. Without that file, 0.2.0 and 0.3.0 fail
+  to compile when installed from Hex.
+
 ## [0.3.0] - 2026-09-23
 
 ### Added
